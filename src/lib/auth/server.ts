@@ -107,24 +107,65 @@ const LOCAL_DEV_ORIGINS: string[] = [
 const baseURL = explicitBaseURL ?? {
   // Include loopback hosts so dynamic baseURL resolves for local email/password
   // (not only the preview wildcard).
-  allowedHosts: [...previewAllowedHosts, "localhost", "127.0.0.1", "[::1]"],
+  allowedHosts: [
+    ...previewAllowedHosts,
+    "localhost",
+    "127.0.0.1",
+    "[::1]",
+    "*.netlify.app",
+  ],
   // `auto` → trust both http:// and https:// expansions of allowedHosts
   // (preview is https; local dev is http).
   protocol: "auto" as const,
   fallback: "http://localhost:8080",
 };
 
+function stripSlash(value: string | undefined): string | undefined {
+  const v = value?.trim();
+  return v ? v.replace(/\/+$/, "") : undefined;
+}
+
+const DEPLOY_ORIGINS = [
+  stripSlash(explicitBaseURL),
+  stripSlash(env("URL")),
+  stripSlash(env("DEPLOY_PRIME_URL")),
+  stripSlash(env("DEPLOY_URL")),
+  stripSlash(env("SITE_URL")),
+  "https://auxilar-de-vagas.netlify.app",
+  "https://*.netlify.app",
+  "http://*.netlify.app",
+].filter((v): v is string => Boolean(v));
+
+const STATIC_TRUSTED_ORIGINS: string[] = [
+  ...DEPLOY_ORIGINS,
+  ...LOCAL_DEV_ORIGINS,
+  ...previewAllowedHosts,
+  ...previewAllowedHosts.flatMap((host) => [`https://${host}`, `http://${host}`]),
+];
+
+function isAllowedRequestOrigin(origin: string): boolean {
+  try {
+    const host = new URL(origin).hostname;
+    return (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "[::1]" ||
+      host === "auxilar-de-vagas.netlify.app" ||
+      host.endsWith(".netlify.app") ||
+      host.endsWith(".grok-sandbox.com")
+    );
+  } catch {
+    return false;
+  }
+}
+
 // Origins Better Auth accepts on credentialed POSTs (sign-up/sign-in, etc.).
 // Missing entries here surface as FORBIDDEN "Invalid origin".
-const trustedOrigins: string[] = explicitBaseURL
-  ? [explicitBaseURL, ...LOCAL_DEV_ORIGINS]
-  : [
-      // Host wildcards (matched against Origin's host)
-      ...previewAllowedHosts,
-      // Full-origin wildcards (matched against Origin)
-      ...previewAllowedHosts.flatMap((host) => [`https://${host}`, `http://${host}`]),
-      ...LOCAL_DEV_ORIGINS,
-    ];
+const trustedOrigins = (request?: Request) => {
+  const origin = request?.headers.get("origin") ?? request?.headers.get("Origin");
+  const extra = origin && isAllowedRequestOrigin(origin) ? [origin] : [];
+  return [...new Set([...STATIC_TRUSTED_ORIGINS, ...extra])];
+};
 
 const databaseUrl = env("DATABASE_URL");
 
