@@ -15,10 +15,14 @@ import {
 } from "@/lib/apply-form";
 import type { AnswerMap, ApplyContext, ApplyQuestion } from "@/lib/types";
 import { toast } from "sonner";
+import { supportUrl, WhatsAppIcon } from "@/components/support-whatsapp";
 
-const WA_NUMBER = "258852174503";
-const WA_TEXT =
+const WA_CV_TEXT =
   "Olá! Estou a candidatar-me a uma vaga e ainda não tenho CV. Preciso de ajuda para preparar o meu currículo.";
+
+function applyHelpText(title: string, company: string) {
+  return `Olá! Acabei de me candidatar à vaga ${title} na ${company}. Preciso de auxílio no meu processo.`;
+}
 
 export function ApplyModal({
   jobId,
@@ -46,6 +50,7 @@ export function ApplyModal({
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultMsg, setResultMsg] = useState<string | null>(null);
   const [resultCta, setResultCta] = useState<string | null>(null);
+  const [sentDone, setSentDone] = useState(false);
 
   useEffect(() => {
     getApplyContext({ data: jobId })
@@ -164,9 +169,9 @@ export function ApplyModal({
         return;
       }
       if (res.outcome === "sent") {
-        toast.success("Candidatura enviada com sucesso.");
+        setSentDone(true);
+        setResultMsg("A sua candidatura foi enviada à empresa. Aguarde 2 dias de resposta.");
         onDone?.();
-        onClose();
         return;
       }
       toast.error(res.message);
@@ -217,6 +222,13 @@ export function ApplyModal({
             </>
           ) : !ctx ? (
             <div className="h-32 animate-pulse rounded-xl bg-border/60" />
+          ) : resultMsg && sentDone && ctx ? (
+            <SentDone
+              title={ctx.title}
+              company={ctx.companyName}
+              message={resultMsg}
+              onClose={onClose}
+            />
           ) : resultMsg ? (
             <>
               <h3 className="text-xl">{ctx.redirectTitle}</h3>
@@ -384,6 +396,48 @@ export function ApplyModal({
   );
 }
 
+function SentDone({
+  title,
+  company,
+  message,
+  onClose,
+}: {
+  title: string;
+  company: string;
+  message: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="text-center">
+      <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-primary-soft text-2xl font-semibold text-primary">
+        ✓
+      </div>
+      <h3 className="text-2xl">Candidatura enviada</h3>
+      <p className="mt-3 text-base leading-relaxed">{message}</p>
+      <p className="mt-2 text-sm text-muted">
+        {title} · {company}
+      </p>
+      <a
+        href={supportUrl(applyHelpText(title, company))}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-whatsapp px-4 text-sm font-medium text-whatsapp-fg"
+      >
+        <WhatsAppIcon className="size-5" />
+        Contacte-nos no WhatsApp para mais auxílio ao seu processo
+      </a>
+      <Link to="/applications" className="mt-3 block">
+        <Button variant="outline" className="w-full">
+          Ver minhas candidaturas
+        </Button>
+      </Link>
+      <Button variant="ghost" className="mt-2 w-full" onClick={onClose}>
+        Fechar
+      </Button>
+    </div>
+  );
+}
+
 function IdentityBlock({
   ctx,
   fullName,
@@ -505,12 +559,12 @@ function CvStep({
         <p className="font-semibold">Não tem CV?</p>
         <p className="mt-1 text-sm text-muted">Fale connosco pelo WhatsApp e ajudamos a preparar o seu currículo.</p>
         <a
-          href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_TEXT)}`}
+          href={supportUrl(WA_CV_TEXT)}
           target="_blank"
           rel="noreferrer"
           className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-[#25D366] text-sm font-medium text-white hover:bg-[#1ebe5d]"
         >
-          <WhatsAppIcon />
+          <WhatsAppIcon className="size-5" />
           Falar connosco
         </a>
       </div>
@@ -649,13 +703,5 @@ function QuestionField({
         <Input value={typeof value === "string" ? value : ""} onChange={(e) => onChange(e.target.value)} />
       )}
     </div>
-  );
-}
-
-function WhatsAppIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true" fill="currentColor">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-    </svg>
   );
 }

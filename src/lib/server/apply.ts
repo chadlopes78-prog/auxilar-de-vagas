@@ -34,6 +34,7 @@ async function loadJobForApply(jobId: number) {
     original_url: string | null;
     external_job_id: string | null;
     apply_email: string | null;
+    company_email: string | null;
     requirements: string | null;
     qualifications: string | null;
     description: string | null;
@@ -42,13 +43,14 @@ async function loadJobForApply(jobId: number) {
   }>`
     select j.id, j.title, co.name as company_name, ci.name as city, r.name as region,
       ctry.name as country, j.apply_method, j.source_name, j.source_id, j.original_url, j.external_job_id,
-      j.apply_email, j.requirements, j.qualifications, j.description, cat.name as category, j.custom_application_questions
+      j.apply_email, p.email as company_email, j.requirements, j.qualifications, j.description, cat.name as category, j.custom_application_questions
     from jobs j
     join companies co on co.id = j.company_id
     left join cities ci on ci.id = j.city_id
     left join regions r on r.id = j.region_id
     left join countries ctry on ctry.id = j.country_id
     left join categories cat on cat.id = j.category_id
+    left join profiles p on p.user_id = co.owner_id
     where j.id = ${jobId}
   `;
   return rows[0] ?? null;
@@ -70,6 +72,52 @@ async function persistAnswers(
       on conflict (application_id, question_key) do update set answer = excluded.answer, question_text = excluded.question_text
     `;
   }
+}
+
+function usableEmail(value: string | null | undefined) {
+  const to = (value ?? "").trim().toLowerCase();
+  if (!to.includes("@")) return null;
+  if (to.includes("example.com") || to.includes("invent")) return null;
+  return to;
+}
+
+const SENT_MESSAGE = "A sua candidatura foi enviada à empresa. Aguarde 2 dias de resposta.";
+
+async function deliverCompanyMail(input: {
+  job: NonNullable<Awaited<ReturnType<typeof loadJobForApply>>>;
+  candidateName: string;
+  candidateEmail: string;
+  candidatePhone: string;
+  cvName: string | null;
+  coverLetter: string;
+  answers: Record<string, string>;
+}) {
+  const targets = [
+    ...new Set(
+      [usableEmail(input.job.apply_email), usableEmail(input.job.company_email)].filter(
+        (v): v is string => Boolean(v),
+      ),
+    ),
+  ];
+  if (!targets.length) {
+    return { ok: false as const, httpCode: 0, message: "Esta vaga não indica um e-mail oficial de candidatura." };
+  }
+  let last: Awaited<ReturnType<typeof sendApplicationEmail>> | null = null;
+  for (const to of targets) {
+    last = await sendApplicationEmail({
+      to,
+      candidateName: input.candidateName,
+      candidateEmail: input.candidateEmail,
+      candidatePhone: input.candidatePhone,
+      jobTitle: input.job.title,
+      companyName: input.job.company_name,
+      cvName: input.cvName,
+      coverLetter: input.coverLetter,
+      answers: input.answers,
+    });
+    if (last.ok) return last;
+  }
+  return last ?? { ok: false as const, httpCode: 0, message: "Não foi possível enviar o e-mail à empresa." };
 }
 
 export const getApplyContext = createServerFn({ method: "GET" })
@@ -428,13 +476,11 @@ export async function executeSubmit(
       for (const [k, v] of Object.entries(answers)) {
         answerLines[k] = Array.isArray(v) ? v.join(", ") : String(v);
       }
-      const mailed = await sendApplicationEmail({
-        to: job.apply_email || "",
+      const mailed = await deliverCompanyMail({
+        job,
         candidateName: data.fullName || p?.full_name || "",
         candidateEmail: email,
         candidatePhone: phone,
-        jobTitle: job.title,
-        companyName: job.company_name,
         cvName,
         coverLetter: cover,
         answers: answerLines,
@@ -459,11 +505,11 @@ export async function executeSubmit(
         });
         await sql`
           insert into notifications (user_id, title, body)
-          values (${userId}, ${"Candidatura enviada com sucesso."}, ${job.title})
+          values (${userId}, ${SENT_MESSAGE}, ${job.title})
         `;
         return {
           outcome: "sent",
-          message: mailed.message,
+          message: SENT_MESSAGE,
           applicationId,
           channel: "email",
         };
@@ -533,7 +579,7 @@ export async function executeSubmit(
       });
       await sql`
         insert into notifications (user_id, title, body)
-        values (${userId}, ${"Candidatura enviada com sucesso."}, ${job.title})
+        values (${userId}, ${SENT_MESSAGE}, ${job.title})
       `;
       const owner = await sql<{ owner_id: string | null }>`
         select co.owner_id from jobs j join companies co on co.id = j.company_id where j.id = ${data.jobId}
@@ -544,9 +590,22 @@ export async function executeSubmit(
           values (${owner[0].owner_id}, ${"Nova candidatura recebida"}, ${job.title})
         `;
       }
+      const answerLines: Record<string, string> = {};
+      for (const [k, v] of Object.entries(answers)) {
+        answerLines[k] = Array.isArray(v) ? v.join(", ") : String(v);
+      }
+      await deliverCompanyMail({
+        job,
+        candidateName: data.fullName || p?.full_name || "",
+        candidateEmail: email,
+        candidatePhone: phone,
+        cvName,
+        coverLetter: cover,
+        answers: answerLines,
+      });
       return {
         outcome: "sent",
-        message: "Candidatura enviada com sucesso.",
+        message: SENT_MESSAGE,
         applicationId,
         channel,
       };
