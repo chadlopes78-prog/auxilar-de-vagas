@@ -46,7 +46,19 @@ async function main() {
     return;
   }
 
-  const pool = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+  const needsSsl = /supabase\.co|neon\.tech|sslmode=require/i.test(databaseUrl);
+  let url = databaseUrl;
+  if (url.includes("pooler.supabase.com") && url.includes(":6543/")) {
+    url = url.replace(":6543/", ":5432/");
+  }
+  if (needsSsl && !/[?&]sslmode=/i.test(url)) {
+    url += url.includes("?") ? "&sslmode=require" : "?sslmode=require";
+  }
+  const pool = new pg.Pool({
+    connectionString: url,
+    max: 1,
+    ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+  });
   const client = await pool.connect();
   try {
     await client.query(

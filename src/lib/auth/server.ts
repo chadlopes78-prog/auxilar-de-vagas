@@ -42,6 +42,7 @@ import { GROK_PROVIDERS } from "./providers";
 import { pgliteDialect } from "./pglite-dialect";
 import { APP_NAME } from "../brand";
 import { readDatabaseUrl } from "../database-url";
+import { pgPoolOptions } from "../pg-options";
 import {
   GROK_ISSUER_DEFAULT,
   PREVIEW_ALLOWED_HOSTS,
@@ -188,14 +189,15 @@ const grokUserInfoUrl = `${issuerBase}/api/auth/oauth2/userinfo`;
 // schema from `migrations/auth/0001_auth.sql`, copied into `migrations/` when
 // the app turns sign-in on.
 const database = databaseUrl
-  ? new Pool({ connectionString: databaseUrl })
+  ? new Pool(pgPoolOptions(databaseUrl))
   : process.env.NETLIFY
-    ? new Pool({
-        connectionString:
+    ? new Pool(
+        pgPoolOptions(
           env("NETLIFY_DB_URL") ??
-          env("DATABASE_URL") ??
-          "postgresql://127.0.0.1:5432/auxilar",
-      })
+            env("DATABASE_URL") ??
+            "postgresql://127.0.0.1:5432/auxilar",
+        ),
+      )
     : { dialect: pgliteDialect(() => getPglite()), type: "postgres" as const };
 
 /** Session token cookie name — also read by the live-preview popup completion page. */
