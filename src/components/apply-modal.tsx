@@ -356,14 +356,13 @@ export function ApplyModal({
                 />
               ) : null}
 
-              {ctx.channel === "official_redirect" && current?.key === "review" ? (
-                <p className="mt-3 text-sm text-muted">{ctx.redirectMessage}</p>
-              ) : null}
-              {ctx.channel === "email" && current?.key === "review" ? (
+              {ctx.applyEmail && current?.key === "review" ? (
                 <p className="mt-3 text-sm text-muted">
-                  O CV será enviado para o e-mail de candidatura publicado nesta vaga
-                  {ctx.applyEmail ? ` (${ctx.applyEmail})` : ""}. Não inventamos endereços.
+                  A candidatura vai para o e-mail oficial da empresa: <strong>{ctx.applyEmail}</strong>
                 </p>
+              ) : null}
+              {ctx.channel === "official_redirect" && !ctx.applyEmail && current?.key === "review" ? (
+                <p className="mt-3 text-sm text-muted">{ctx.redirectMessage}</p>
               ) : null}
             </>
           )}

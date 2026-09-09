@@ -265,14 +265,21 @@ export function parseRssItems(xml: string): RssItem[] {
 
 export function extractPublishedEmail(text: string | null | undefined): string | null {
   if (!text) return null;
-  const labeled = text.match(
-    /(?:envie(?:\s+o)?\s+(?:o\s+)?cv|candidat\w*|recrutamento|e-?mail(?:\s+de\s+candidatura)?)[^\n@]{0,60}([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/i,
+  const decoded = stripTags(text).replace(/mailto:/gi, " ");
+  const junk = /noreply|no-reply|donotreply|unsubscribe|privacy@|sentry@|example\.com|invent@/i;
+  const labeled = decoded.match(
+    /(?:e-?mails?|candidat\w*|recrutamento|recursos humanos|\brh\b|envie(?:\s+o)?\s+(?:o\s+)?cv|para)[^\n@]{0,80}([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/i,
   );
-  if (labeled?.[1]) return labeled[1].toLowerCase();
-  const role = text.match(
-    /\b(?:recrutamento|candidatura|cv|rh|jobs|carreiras|pessoas)[a-z0-9._-]*@[a-z0-9.-]+\.[a-z]{2,}\b/i,
+  if (labeled?.[1] && !junk.test(labeled[1])) return labeled[1].toLowerCase();
+  const found = decoded.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi) ?? [];
+  const unique = [...new Set(found.map((e) => e.toLowerCase()))].filter((e) => !junk.test(e));
+  const role = unique.find((e) =>
+    /^(recrutamento|rh|hr|jobs?|cv|candidatura|carreiras|pessoas|talent|admiss)/i.test(e),
   );
-  return role ? role[0].toLowerCase() : null;
+  if (role) return role;
+  if (unique.length === 1) return unique[0];
+  const companyDomain = unique.find((e) => !/@(gmail|yahoo|hotmail|outlook|live|icloud)\./i.test(e));
+  return companyDomain ?? null;
 }
 
 export function fieldFromText(text: string, labels: string[]) {

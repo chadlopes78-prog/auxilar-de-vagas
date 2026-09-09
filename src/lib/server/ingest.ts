@@ -1169,7 +1169,9 @@ export async function ingestNormalizedJob(input: {
 }) {
   const sql = await getSql();
   const ctx = input.ctx;
-  const applyEmail = input.applyEmail || extractPublishedEmail(input.excerpt);
+  const applyEmail =
+    input.applyEmail ||
+    extractPublishedEmail([input.excerpt, input.requirements, input.qualifications].filter(Boolean).join("\n"));
   const companyName = cleanCompanyName(input.company || input.sourceName) || input.sourceName;
   const fp = fingerprint(input.title, companyName, input.cityName);
   const fromKnown = ctx?.known.find(

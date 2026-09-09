@@ -7,6 +7,7 @@ import { writeIntegrationLog } from "@/lib/server/connectors/log";
 import { sendApplicationEmail } from "@/lib/server/mail";
 import { loadCandidateBundle } from "@/lib/server/candidate";
 import { detectProfession, ensureJobQuestions, jobWantsCoverLetter } from "@/lib/server/apply-questions";
+import { extractPublishedEmail } from "@/lib/server/connectors/rss";
 import { questionVisible, suggestAnswers } from "@/lib/apply-form";
 import type { AnswerMap, ApplyContext, ApplyOutcome, ApplicationRow } from "@/lib/types";
 
@@ -77,47 +78,62 @@ async function persistAnswers(
 function usableEmail(value: string | null | undefined) {
   const to = (value ?? "").trim().toLowerCase();
   if (!to.includes("@")) return null;
-  if (to.includes("example.com") || to.includes("invent")) return null;
+  if (to.includes("example.com") || to.includes("invent") || to.includes("noreply") || to.includes("no-reply")) {
+    return null;
+  }
   return to;
+}
+
+function officialEmailFromJob(job: {
+  apply_email: string | null;
+  description: string | null;
+  requirements: string | null;
+  qualifications: string | null;
+}) {
+  return (
+    usableEmail(job.apply_email) ??
+    extractPublishedEmail([job.description, job.requirements, job.qualifications].filter(Boolean).join("\n"))
+  );
 }
 
 const SENT_MESSAGE = "A sua candidatura foi enviada à empresa. Aguarde 2 dias de resposta.";
 
+async function persistOfficialEmail(jobId: number, email: string) {
+  const sql = await getSql();
+  await sql`
+    update jobs set
+      apply_email = coalesce(apply_email, ${email}),
+      apply_method = case when apply_method in ('external', 'url') then 'email' else apply_method end
+    where id = ${jobId}
+  `;
+}
+
 async function deliverCompanyMail(input: {
-  job: NonNullable<Awaited<ReturnType<typeof loadJobForApply>>>;
+  to: string | null;
   candidateName: string;
   candidateEmail: string;
   candidatePhone: string;
+  jobTitle: string;
+  companyName: string;
   cvName: string | null;
   coverLetter: string;
   answers: Record<string, string>;
 }) {
-  const targets = [
-    ...new Set(
-      [usableEmail(input.job.apply_email), usableEmail(input.job.company_email)].filter(
-        (v): v is string => Boolean(v),
-      ),
-    ),
-  ];
-  if (!targets.length) {
+  const to = usableEmail(input.to);
+  if (!to) {
     return { ok: false as const, httpCode: 0, message: "Esta vaga não indica um e-mail oficial de candidatura." };
   }
-  let last: Awaited<ReturnType<typeof sendApplicationEmail>> | null = null;
-  for (const to of targets) {
-    last = await sendApplicationEmail({
-      to,
-      candidateName: input.candidateName,
-      candidateEmail: input.candidateEmail,
-      candidatePhone: input.candidatePhone,
-      jobTitle: input.job.title,
-      companyName: input.job.company_name,
-      cvName: input.cvName,
-      coverLetter: input.coverLetter,
-      answers: input.answers,
-    });
-    if (last.ok) return last;
-  }
-  return last ?? { ok: false as const, httpCode: 0, message: "Não foi possível enviar o e-mail à empresa." };
+  return sendApplicationEmail({
+    to,
+    candidateName: input.candidateName,
+    candidateEmail: input.candidateEmail,
+    candidatePhone: input.candidatePhone,
+    jobTitle: input.jobTitle,
+    companyName: input.companyName,
+    cvName: input.cvName,
+    coverLetter: input.coverLetter,
+    answers: input.answers,
+  });
 }
 
 export const getApplyContext = createServerFn({ method: "GET" })
@@ -127,14 +143,20 @@ export const getApplyContext = createServerFn({ method: "GET" })
     const sql = await getSql();
     const job = await loadJobForApply(jobId);
     if (!job) throw new Error("Vaga não encontrada");
+    const officialEmail = officialEmailFromJob(job);
+    if (officialEmail && officialEmail !== job.apply_email) {
+      await persistOfficialEmail(job.id, officialEmail);
+      job.apply_email = officialEmail;
+    }
     const connector = getConnector(job.source_name, job.source_id);
     const caps = connector.capabilities();
-    const channel = resolveApplyChannel({
+    let channel = resolveApplyChannel({
       applyMethod: job.apply_method,
       sourceName: job.source_name,
       sourceId: job.source_id,
-      applyEmail: job.apply_email,
+      applyEmail: officialEmail,
     });
+    if (officialEmail && channel === "official_redirect") channel = "email";
     const slug = sourceSlugFrom(job.source_name, job.source_id);
     const loc = [job.city, job.region, job.country].filter(Boolean).join(", ");
     const existing = await sql<{ id: number; status: string; official_url: string | null }>`
@@ -240,7 +262,7 @@ export const getApplyContext = createServerFn({ method: "GET" })
       regionName: profile[0]?.region_name ?? job.region,
       countryName: profile[0]?.country_name ?? job.country,
       suggestedAnswers: suggested,
-      applyEmail: job.apply_email,
+      applyEmail: officialEmail,
     };
   });
 
@@ -298,13 +320,19 @@ export async function executeSubmit(
     const sql = await getSql();
     const job = await loadJobForApply(data.jobId);
     if (!job) throw new Error("Vaga não encontrada");
+    const officialEmail = officialEmailFromJob(job);
+    if (officialEmail && officialEmail !== job.apply_email) {
+      await persistOfficialEmail(job.id, officialEmail);
+      job.apply_email = officialEmail;
+    }
     const connector = getConnector(job.source_name, job.source_id);
-    const channel = resolveApplyChannel({
+    let channel = resolveApplyChannel({
       applyMethod: job.apply_method,
       sourceName: job.source_name,
       sourceId: job.source_id,
-      applyEmail: job.apply_email,
+      applyEmail: officialEmail,
     });
+    if (officialEmail && channel === "official_redirect") channel = "email";
     const slug = sourceSlugFrom(job.source_name, job.source_id);
     const dup = await sql<{ id: number; status: string; official_url: string | null }>`
       select id, status, official_url from applications
@@ -477,10 +505,12 @@ export async function executeSubmit(
         answerLines[k] = Array.isArray(v) ? v.join(", ") : String(v);
       }
       const mailed = await deliverCompanyMail({
-        job,
+        to: officialEmail,
         candidateName: data.fullName || p?.full_name || "",
         candidateEmail: email,
         candidatePhone: phone,
+        jobTitle: job.title,
+        companyName: job.company_name,
         cvName,
         coverLetter: cover,
         answers: answerLines,
@@ -538,7 +568,7 @@ export async function executeSubmit(
       jobId: job.id,
       externalJobId: job.external_job_id,
       officialUrl: job.original_url,
-      applyEmail: job.apply_email,
+      applyEmail: officialEmail,
       sourceSlug: slug,
       sourceName: job.source_name || connector.sourceName,
       title: job.title,
@@ -595,10 +625,12 @@ export async function executeSubmit(
         answerLines[k] = Array.isArray(v) ? v.join(", ") : String(v);
       }
       await deliverCompanyMail({
-        job,
+        to: officialEmail,
         candidateName: data.fullName || p?.full_name || "",
         candidateEmail: email,
         candidatePhone: phone,
+        jobTitle: job.title,
+        companyName: job.company_name,
         cvName,
         coverLetter: cover,
         answers: answerLines,
