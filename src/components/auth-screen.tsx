@@ -13,7 +13,7 @@ import { authErrorMessage } from "@/lib/auth-errors";
 export function AuthFrame({ children }: { children: ReactNode }) {
   return (
     <GuestOnly>
-      <div className="auth-stage flex min-h-dvh flex-col items-center justify-center px-4 py-8">
+      <div className="auth-stage flex min-h-dvh flex-col items-center justify-start px-4 py-6 sm:justify-center sm:py-10">
         <span className="auth-dot" />
         <span className="auth-dot" />
         <span className="auth-dot" />
@@ -34,7 +34,7 @@ export function AuthFrame({ children }: { children: ReactNode }) {
           href={supportUrl(SUPPORT_LOGIN_TEXT)}
           target="_blank"
           rel="noreferrer"
-          className="wa-pulse auth-enter auth-enter-4 relative z-10 mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-whatsapp px-4 text-sm font-medium text-whatsapp-fg transition-transform duration-150 hover:brightness-105 active:scale-[0.96]"
+          className="wa-pulse auth-enter auth-enter-4 relative z-10 mt-6 inline-flex min-h-12 max-w-full items-center gap-2 rounded-full bg-whatsapp px-4 text-center text-sm font-medium text-whatsapp-fg transition-transform duration-150 hover:brightness-105 active:scale-[0.96]"
         >
           <WhatsAppIcon className="size-5" />
           Tens alguma dúvida? Contacta o suporte
@@ -146,9 +146,9 @@ export function LoginForm() {
 
   return (
     <AuthFrame>
-      <div className="auth-card auth-enter auth-enter-2 w-full max-w-[420px] p-6 sm:p-8">
+      <div className="auth-card auth-enter auth-enter-2 w-full max-w-[420px] p-5 sm:p-8">
         <ModeTabs mode="login" />
-        <h1 className="text-3xl text-fg">Bem-vindo de volta</h1>
+        <h1 className="text-2xl text-fg sm:text-3xl">Bem-vindo de volta</h1>
         <p className="mt-1 text-sm text-muted">Entre na sua conta para continuar.</p>
         <form className="mt-6 space-y-3" onSubmit={(e) => void onEmail(e)}>
           <div>
@@ -248,9 +248,9 @@ export function RegisterForm() {
 
   return (
     <AuthFrame>
-      <div className="auth-card auth-enter auth-enter-2 w-full max-w-[420px] p-6 sm:p-8">
+      <div className="auth-card auth-enter auth-enter-2 w-full max-w-[420px] p-5 sm:p-8">
         <ModeTabs mode="register" />
-        <h1 className="text-3xl text-fg">Criar a sua conta</h1>
+        <h1 className="text-2xl text-fg sm:text-3xl">Criar a sua conta</h1>
         <p className="mt-1 text-sm text-muted">Preencha os dados uma vez. Depois acede ao painel.</p>
         <form className="mt-5 space-y-3" onSubmit={(e) => void onSubmit(e)}>
           <div>

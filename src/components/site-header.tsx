@@ -76,12 +76,12 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-4">
         <Link to="/" className="flex min-w-0 items-center gap-2 font-semibold tracking-tight">
           <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-[10px] font-bold tracking-tight text-primary-fg">
             {APP_MARK}
           </span>
-          <span className="truncate text-[15px] sm:text-base">{APP_NAME}</span>
+          <span className="truncate text-sm sm:text-base">{APP_NAME}</span>
         </Link>
         <nav className="hidden flex-1 items-center gap-1 md:flex">
           {nav.map((n) => (
@@ -112,8 +112,10 @@ export function SiteHeader() {
           <MapPin className="size-3.5" />
           {placeLabel ? `${countryFlag(country?.code)} ${placeLabel}` : "Localização"}
         </button>
-        <div className="ml-auto flex items-center gap-2">
-          <SupportHeaderButton />
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          <span className="hidden sm:inline-flex">
+            <SupportHeaderButton />
+          </span>
           {user ? (
             <Link to="/dashboard" className="hidden md:inline">
               <Button size="sm" variant="outline">
@@ -135,25 +137,31 @@ export function SiteHeader() {
       {open ? (
         <div className="border-t border-border px-4 py-3 md:hidden">
           {nav.map((n) => (
-            <Link key={n.to} to={n.to} className="block py-3" onClick={() => setOpen(false)}>
+            <Link key={n.to} to={n.to} className="block min-h-11 py-3 text-base" onClick={() => setOpen(false)}>
               {n.label}
             </Link>
           ))}
           {user ? (
             <>
-              <Link to="/dashboard" className="block py-3" onClick={() => setOpen(false)}>
+              <Link to="/applications" className="block min-h-11 py-3 text-base" onClick={() => setOpen(false)}>
+                Minhas candidaturas
+              </Link>
+              <Link to="/saved" className="block min-h-11 py-3 text-base" onClick={() => setOpen(false)}>
+                Vagas guardadas
+              </Link>
+              <Link to="/dashboard" className="block min-h-11 py-3 text-base" onClick={() => setOpen(false)}>
                 Painel
               </Link>
-              <button type="button" className="block py-3" onClick={() => signOut()}>
+              <button type="button" className="block min-h-11 py-3 text-base" onClick={() => signOut()}>
                 Sair
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="block py-3" onClick={() => setOpen(false)}>
+              <Link to="/login" className="block min-h-11 py-3 text-base" onClick={() => setOpen(false)}>
                 Entrar
               </Link>
-              <Link to="/register" className="block py-3" onClick={() => setOpen(false)}>
+              <Link to="/register" className="block min-h-11 py-3 text-base" onClick={() => setOpen(false)}>
                 Criar conta
               </Link>
             </>
@@ -162,7 +170,7 @@ export function SiteHeader() {
             href={supportUrl()}
             target="_blank"
             rel="noreferrer"
-            className="block py-3"
+            className="block min-h-11 py-3 text-base"
             onClick={() => setOpen(false)}
           >
             Suporte
@@ -200,9 +208,9 @@ export function SiteFooter() {
 
 export function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-fg">
+    <div className="flex min-h-dvh flex-col overflow-x-clip bg-bg text-fg">
       <SiteHeader />
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 pb-24 md:pb-0">{children}</div>
       <SiteFooter />
     </div>
   );

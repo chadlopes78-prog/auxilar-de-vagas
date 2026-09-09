@@ -9,7 +9,7 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
   return (
     <input
       className={cn(
-        "h-11 w-full rounded-[10px] border border-border bg-surface px-3 text-sm text-fg placeholder:text-muted focus-visible:outline-2 focus-visible:outline-primary",
+        "h-12 w-full rounded-[10px] border border-border bg-surface px-3 text-base text-fg placeholder:text-muted focus-visible:outline-2 focus-visible:outline-primary",
         className,
       )}
       {...props}
@@ -21,7 +21,7 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
   return (
     <textarea
       className={cn(
-        "w-full rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-fg placeholder:text-muted focus-visible:outline-2 focus-visible:outline-primary",
+        "min-h-24 w-full rounded-[10px] border border-border bg-surface px-3 py-3 text-base text-fg placeholder:text-muted focus-visible:outline-2 focus-visible:outline-primary",
         className,
       )}
       {...props}
@@ -34,7 +34,7 @@ export function Select({ className, ...props }: InputHTMLAttributes<HTMLSelectEl
     <select
       suppressHydrationWarning
       className={cn(
-        "h-11 w-full rounded-[10px] border border-border bg-surface px-3 text-sm text-fg focus-visible:outline-2 focus-visible:outline-primary",
+        "h-12 w-full rounded-[10px] border border-border bg-surface px-3 text-base text-fg focus-visible:outline-2 focus-visible:outline-primary",
         className,
       )}
       {...props}

@@ -59,7 +59,7 @@ export function SupportFloatButton() {
       href={supportUrl()}
       target="_blank"
       rel="noreferrer"
-      className="wa-pulse fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-whatsapp text-whatsapp-fg shadow-[0_12px_28px_-8px_rgb(37_211_102_/_0.55)] transition-transform duration-150 hover:brightness-105 active:scale-[0.96]"
+      className="wa-pulse fixed z-50 grid size-14 place-items-center rounded-full bg-whatsapp text-whatsapp-fg shadow-[0_12px_28px_-8px_rgb(37_211_102_/_0.55)] transition-transform duration-150 hover:brightness-105 active:scale-[0.96] bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))]"
       aria-label="Falar com o suporte no WhatsApp"
     >
       <WhatsAppIcon className="size-7" />

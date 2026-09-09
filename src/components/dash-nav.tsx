@@ -128,7 +128,7 @@ export function DashShell({
   active: string;
 }) {
   return (
-    <div className="mx-auto grid max-w-6xl gap-5 px-4 py-6 md:grid-cols-[240px_1fr] md:gap-6 md:py-8">
+    <div className="mx-auto grid max-w-6xl gap-4 px-3 py-4 sm:px-4 md:grid-cols-[240px_1fr] md:gap-6 md:py-8">
       <aside className="md:sticky md:top-20 md:self-start">
         <DashNav profile={profile} active={active} />
       </aside>

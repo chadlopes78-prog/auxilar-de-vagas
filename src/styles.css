@@ -35,11 +35,28 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   html,
   body {
     background: var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
+    overflow-x: clip;
+    max-width: 100%;
+  }
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+    touch-action: manipulation;
+  }
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
   }
   h1,
   h2,
@@ -64,8 +81,10 @@
   .auth-stage {
     position: relative;
     isolation: isolate;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     min-height: 100dvh;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
     background:
       radial-gradient(1200px 600px at 50% -10%, rgb(15 110 76 / 0.35), transparent 60%),
       radial-gradient(800px 500px at 100% 100%, rgb(15 110 76 / 0.18), transparent 50%),

@@ -57,9 +57,9 @@ function Dashboard() {
   return (
     <Shell>
       <DashShell profile={profile} active="/dashboard">
-        <section className="dash-hero p-6 md:p-8">
+        <section className="dash-hero p-5 md:p-8">
           <p className="text-sm text-primary-fg/70">O seu painel</p>
-          <h1 className="mt-1 text-3xl text-primary-fg md:text-4xl">Olá{first ? `, ${first}` : ""}</h1>
+          <h1 className="mt-1 text-2xl text-primary-fg sm:text-3xl md:text-4xl">Olá{first ? `, ${first}` : ""}</h1>
           <p className="mt-2 flex items-center gap-1.5 text-sm text-primary-fg/80">
             <MapPin className="size-4" />
             {place || "Escolha a localização para ver vagas perto de si"}
