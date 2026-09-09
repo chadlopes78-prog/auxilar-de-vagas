@@ -9,6 +9,7 @@ import { useLocationStore } from "@/store/location";
 import { APP_MARK, APP_NAME } from "@/lib/brand";
 import { toast } from "sonner";
 import { SUPPORT_LOGIN_TEXT, supportUrl, WhatsAppIcon } from "@/components/support-whatsapp";
+import { authErrorMessage } from "@/lib/auth-errors";
 
 export function AuthFrame({ children }: { children: ReactNode }) {
   return (
@@ -67,23 +68,90 @@ function ModeTabs({ mode }: { mode: "login" | "register" }) {
   );
 }
 
+function GoogleMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
+      <path
+        fill="#4285F4"
+        d="M23.49 12.27c0-.82-.07-1.64-.23-2.43H12v4.6h6.46a5.52 5.52 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.55-5.17 3.55-8.8Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.97-1.07 7.96-2.93l-3.88-3c-1.08.73-2.47 1.16-4.08 1.16-3.14 0-5.8-2.12-6.75-4.97H1.24v3.09A12 12 0 0 0 12 24Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.25 14.26A7.2 7.2 0 0 1 4.87 12c0-.79.14-1.55.38-2.26V6.65H1.24A12 12 0 0 0 0 12c0 1.94.46 3.77 1.24 5.35l4.01-3.09Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.76 0 3.33.6 4.57 1.78l3.43-3.43C17.96 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.24 6.65l4.01 3.09C6.2 6.87 8.86 4.75 12 4.75Z"
+      />
+    </svg>
+  );
+}
+
 function SocialButtons({ callbackURL }: { callbackURL: string }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState("");
   if (!authEnabled) {
     return <p className="text-sm text-muted">O início de sessão está desactivado.</p>;
   }
+
+  async function start(providerId: string) {
+    setError("");
+    setBusy(providerId);
+    try {
+      if (providerId === "grok-google") {
+        const native = await authClient.signIn.social({
+          provider: "google",
+          callbackURL,
+          errorCallbackURL: "/login",
+        }).catch(() => ({ error: { message: "native-unavailable" }, data: null }));
+        if (!native.error && native.data?.url) {
+          window.location.href = native.data.url;
+          return;
+        }
+      }
+      await signIn(providerId, { callbackURL, errorCallbackURL: "/login" });
+    } catch (err) {
+      const message = authErrorMessage(err, "Não foi possível entrar com esta conta.");
+      setError(message);
+      toast.error(message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   return (
     <div className="space-y-2">
-      {GROK_PROVIDERS.map((p) => (
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full gap-2 bg-white text-neutral-800 hover:bg-neutral-50"
+        disabled={Boolean(busy)}
+        onClick={() => void start("grok-google")}
+      >
+        <GoogleMark />
+        {busy === "grok-google" ? "A ligar ao Google…" : "Continuar com Google"}
+      </Button>
+      {GROK_PROVIDERS.filter((p) => p.idp !== "google").map((p) => (
         <Button
           key={p.providerId}
           type="button"
           variant="outline"
           className="w-full"
-          onClick={() => signIn(p.providerId, { callbackURL })}
+          disabled={Boolean(busy)}
+          onClick={() => void start(p.providerId)}
         >
-          Continuar com {p.label}
+          {busy === p.providerId ? "A ligar…" : `Continuar com ${p.label}`}
         </Button>
       ))}
+      {error ? (
+        <p className="text-sm text-danger" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -102,7 +170,7 @@ export function LoginForm() {
     const { error: err } = await authClient.signIn.email({ email, password });
     setBusy(false);
     if (err) {
-      const message = err.message ?? "Email ou palavra-passe incorrectos.";
+      const message = authErrorMessage(err, "Email ou palavra-passe incorrectos.");
       setError(message);
       toast.error(message);
       return;
@@ -190,36 +258,42 @@ export function RegisterForm() {
       return;
     }
     setBusy(true);
-    const { error: err } = await authClient.signUp.email({ email, password, name: fullName });
-    if (err) {
-      setBusy(false);
-      const message = err.message ?? "Não foi possível criar a conta.";
+    try {
+      const { error: err } = await authClient.signUp.email({ email, password, name: fullName });
+      if (err) {
+        const message = authErrorMessage(err, "Não foi possível criar a conta.");
+        setError(message);
+        toast.error(message);
+        return;
+      }
+      try {
+        const created = await ensureProfile({ data: { email, name: fullName } });
+        await updateProfile({
+          data: {
+            role: "candidate",
+            fullName,
+            email,
+            countryId: loc.countryId || 1,
+            regionId: loc.regionId || null,
+            cityId: loc.cityId || null,
+          },
+        });
+        toast.success(
+          created.welcomeEmailSent
+            ? "Conta criada. Enviámos um e-mail de boas-vindas."
+            : "Conta criada com sucesso.",
+        );
+      } catch {
+        /* profile is created on the dashboard if this fails */
+      }
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      const message = authErrorMessage(err, "Não foi possível criar a conta.");
       setError(message);
       toast.error(message);
-      return;
+    } finally {
+      setBusy(false);
     }
-    try {
-      const created = await ensureProfile({ data: { email, name: fullName } });
-      await updateProfile({
-        data: {
-          role: "candidate",
-          fullName,
-          email,
-          countryId: loc.countryId || 1,
-          regionId: loc.regionId || null,
-          cityId: loc.cityId || null,
-        },
-      });
-      toast.success(
-        created.welcomeEmailSent
-          ? "Conta criada. Enviámos um e-mail de boas-vindas."
-          : "Conta criada com sucesso.",
-      );
-    } catch {
-      /* profile is created on the dashboard if this fails */
-    }
-    setBusy(false);
-    navigate({ to: "/dashboard" });
   }
 
   return (
