@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useLocationStore } from "@/store/location";
 import { useGeo } from "@/hooks/use-geo";
 import { countryFlag } from "@/lib/i18n";
-import { APP_MARK, APP_NAME } from "@/lib/brand";
+import { APP_NAME } from "@/lib/brand";
+import { BrandMark } from "@/components/brand-mark";
 import { SupportHeaderButton, supportUrl } from "@/components/support-whatsapp";
 
 function AuthSlot({ compact }: { compact?: boolean }) {
@@ -78,9 +79,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/90 backdrop-blur-md">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-4">
         <Link to="/" className="flex min-w-0 items-center gap-2 font-semibold tracking-tight">
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-[10px] font-bold tracking-tight text-primary-fg">
-            {APP_MARK}
-          </span>
+          <BrandMark className="size-8" />
           <span className="truncate text-sm sm:text-base">{APP_NAME}</span>
         </Link>
         <nav className="hidden flex-1 items-center gap-1 md:flex">

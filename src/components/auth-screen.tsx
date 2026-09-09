@@ -5,7 +5,8 @@ import { createEmailAccount, signInEmailAccount } from "@/lib/auth/email-signup"
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { GuestOnly } from "@/components/require-auth";
-import { APP_MARK, APP_NAME } from "@/lib/brand";
+import { APP_NAME } from "@/lib/brand";
+import { BrandMark } from "@/components/brand-mark";
 import { toast } from "sonner";
 import { SUPPORT_LOGIN_TEXT, supportUrl, WhatsAppIcon } from "@/components/support-whatsapp";
 import { authErrorMessage } from "@/lib/auth-errors";
@@ -24,9 +25,7 @@ export function AuthFrame({ children }: { children: ReactNode }) {
         <span className="auth-dot" />
         <div className="auth-glow" aria-hidden />
         <div className="auth-enter relative z-10 mb-6 flex items-center gap-2">
-          <span className="grid size-10 place-items-center rounded-xl bg-primary text-xs font-bold tracking-tight text-primary-fg">
-            {APP_MARK}
-          </span>
+          <BrandMark className="size-10 rounded-xl" />
           <span className="text-lg font-semibold tracking-tight">{APP_NAME}</span>
         </div>
         {children}

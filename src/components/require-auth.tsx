@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate } from "@tanstack/react-router";
-import { APP_MARK } from "@/lib/brand";
+import { BrandMark } from "@/components/brand-mark";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
@@ -9,9 +9,7 @@ export function AuthSplash() {
     <div className="auth-stage grid min-h-dvh place-items-center px-4">
       <div className="auth-glow" aria-hidden />
       <div className="relative z-10 flex flex-col items-center gap-4">
-        <span className="grid size-12 place-items-center rounded-xl bg-primary text-sm font-bold tracking-tight text-primary-fg">
-          {APP_MARK}
-        </span>
+        <BrandMark className="size-12 rounded-xl" />
         <div className="h-1.5 w-28 overflow-hidden rounded-full bg-primary-soft/20">
           <div className="h-full w-1/2 animate-pulse rounded-full bg-primary" />
         </div>
