@@ -43,7 +43,7 @@ export function SupportNavLink() {
       href={supportUrl()}
       target="_blank"
       rel="noreferrer"
-      className="dash-nav-link w-full shrink-0 text-fg/80 hover:bg-bg"
+      className="dash-nav-link min-w-0 text-fg/80 hover:bg-bg"
     >
       <WhatsAppIcon className="size-4 shrink-0 text-whatsapp" />
       <span>Suporte</span>

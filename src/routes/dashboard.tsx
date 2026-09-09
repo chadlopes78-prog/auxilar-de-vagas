@@ -64,15 +64,15 @@ function Dashboard() {
             <MapPin className="size-4" />
             {place || "Escolha a localização para ver vagas perto de si"}
           </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Link to="/vagas">
-              <Button className="bg-surface text-fg hover:bg-bg">
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <Link to="/vagas" className="w-full sm:w-auto">
+              <Button className="w-full bg-surface text-fg hover:bg-bg sm:w-auto">
                 <Search className="size-4" />
                 Procurar vagas
               </Button>
             </Link>
-            <Link to="/cv">
-              <Button variant="outline" className="border-primary-fg/20 bg-transparent text-primary-fg hover:bg-primary-hover">
+            <Link to="/cv" className="w-full sm:w-auto">
+              <Button variant="outline" className="w-full border-primary-fg/20 bg-transparent text-primary-fg hover:bg-primary-hover sm:w-auto">
                 Completar o CV
               </Button>
             </Link>

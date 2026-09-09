@@ -77,7 +77,7 @@ export function DashNav({ profile, active }: { profile: Profile | null; active: 
   const roleLabel = ROLE_PT[role] ?? role;
 
   return (
-    <nav className="dash-card overflow-hidden p-2 md:p-3">
+    <nav className="dash-card p-2 md:p-3">
       <div className="mb-2 hidden items-center gap-3 rounded-xl bg-bg px-3 py-3 md:flex">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary text-sm font-semibold text-primary-fg">
           {initials(name) || "AV"}
@@ -87,7 +87,7 @@ export function DashNav({ profile, active }: { profile: Profile | null; active: 
           <div className="truncate text-xs text-muted">{roleLabel}</div>
         </div>
       </div>
-      <div className="-mx-1 flex gap-1 overflow-x-auto px-1 md:mx-0 md:block md:overflow-visible md:px-0">
+      <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:block">
         {items.map(([to, label]) => {
           const Icon = ICONS[to] ?? LayoutGrid;
           const on = active === to;
@@ -95,12 +95,12 @@ export function DashNav({ profile, active }: { profile: Profile | null; active: 
             <Link
               key={to}
               to={to}
-              className={`dash-nav-link shrink-0 md:w-full ${
+              className={`dash-nav-link min-w-0 ${
                 on ? "bg-primary-soft font-medium text-primary" : "text-fg/80 hover:bg-bg"
               }`}
             >
               <Icon className="size-4 shrink-0" />
-              <span className="whitespace-nowrap">{label}</span>
+              <span className="truncate">{label}</span>
             </Link>
           );
         })}
@@ -152,7 +152,7 @@ export function DashPage({
     <div>
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-3xl">{title}</h1>
+          <h1 className="text-2xl sm:text-3xl">{title}</h1>
           {subtitle ? <p className="mt-1 max-w-2xl text-sm text-muted">{subtitle}</p> : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
@@ -192,13 +192,13 @@ export function StatCard({
   to?: string;
 }) {
   const body = (
-    <div className="dash-card flex min-h-[92px] items-center gap-3 p-4 transition-transform duration-150 hover:-translate-y-0.5">
-      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+    <div className="dash-card flex min-h-[92px] items-center gap-3 overflow-hidden p-3 sm:p-4 transition-transform duration-150 hover:-translate-y-0.5">
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary sm:size-11">
         <Icon className="size-5" />
       </span>
       <div className="min-w-0">
-        <div className="text-2xl font-semibold tabular-nums">{value}</div>
-        <div className="text-sm text-muted">{label}</div>
+        <div className="text-xl font-semibold tabular-nums sm:text-2xl">{value}</div>
+        <div className="text-xs leading-tight text-muted sm:text-sm">{label}</div>
       </div>
     </div>
   );

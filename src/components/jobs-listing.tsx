@@ -391,10 +391,10 @@ export function JobsListing({
   );
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 md:grid-cols-[280px_1fr]">
+    <div className="mx-auto grid max-w-6xl gap-6 px-3 py-4 sm:px-4 sm:py-6 md:grid-cols-[280px_1fr]">
       <div className="hidden md:block">{filters}</div>
-      <div>
-        {heading ? <h1 className="mb-1 text-3xl">{heading}</h1> : null}
+      <div className="min-w-0">
+        {heading ? <h1 className="mb-1 text-2xl sm:text-3xl">{heading}</h1> : null}
         {subheading ? <p className="mb-4 text-sm text-muted">{subheading}</p> : null}
         <SourceStrip
           sources={sources}
@@ -410,7 +410,7 @@ export function JobsListing({
           }
         />
         <form
-          className="mb-4 flex gap-2"
+          className="mb-4 flex flex-col gap-2 sm:flex-row"
           onSubmit={(e) => {
             e.preventDefault();
             navigate({ to: path, search: { ...search, q: q || undefined } } as never);
@@ -420,9 +420,11 @@ export function JobsListing({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Cargo ou palavra-chave, ex. Motorista"
-            className="flex-1"
+            className="min-w-0 flex-1"
           />
-          <Button type="submit">Pesquisar</Button>
+          <Button type="submit" className="w-full sm:w-auto">
+            Pesquisar
+          </Button>
         </form>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted">
