@@ -18,7 +18,7 @@ export const useLocationStore = create<State>()(
       countryId: 1,
       regionId: 1,
       cityId: 1,
-      confirmed: false,
+      confirmed: true,
       setLocation: (p) => set(p),
     }),
     { name: "nearhire-location" },

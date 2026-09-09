@@ -127,8 +127,8 @@ export const ensureProfile = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const sql = await getSql();
     const inserted = await sql<{ user_id: string; email: string | null; full_name: string | null }>`
-      insert into profiles (user_id, email, full_name, role, country_id, region_id, city_id)
-      values (${context.userId}, ${data.email ?? null}, ${data.name ?? null}, 'candidate', 1, 1, 1)
+      insert into profiles (user_id, email, full_name, role, country_id, region_id, city_id, onboarded)
+      values (${context.userId}, ${data.email ?? null}, ${data.name ?? null}, 'candidate', 1, 1, 1, true)
       on conflict (user_id) do nothing
       returning user_id, email, full_name
     `;

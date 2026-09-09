@@ -1,11 +1,39 @@
-import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import { createRootRoute, HeadContent, Outlet, Scripts, useRouterState } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
-import { LocationPrompt } from "@/components/location-prompt";
+import { RequireAuth } from "@/components/require-auth";
 import { SupportFloatButton } from "@/components/support-whatsapp";
 import { APP_NAME } from "@/lib/brand";
 import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
+
+function isPublicPath(pathname: string) {
+  return (
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/criar-conta" ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password")
+  );
+}
+
+function AppFrame() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const publicPage = isPublicPath(pathname);
+  return (
+    <AuthProvider>
+      {publicPage ? (
+        <Outlet />
+      ) : (
+        <RequireAuth>
+          <Outlet />
+        </RequireAuth>
+      )}
+      <SupportFloatButton />
+      <Toaster position="bottom-left" />
+    </AuthProvider>
+  );
+}
 
 export const Route = createRootRoute({
   head: () => ({
@@ -38,12 +66,7 @@ export const Route = createRootRoute({
       </head>
       <body>
         <PreviewHostBridge />
-        <AuthProvider>
-          <LocationPrompt />
-          <Outlet />
-          <SupportFloatButton />
-          <Toaster position="bottom-left" />
-        </AuthProvider>
+        <AppFrame />
         <Scripts />
       </body>
     </html>

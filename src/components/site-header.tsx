@@ -68,7 +68,7 @@ export function SiteHeader() {
   const placeLabel = city ?? region ?? country?.name;
 
   const nav = [
-    { to: "/", label: "Início" },
+    { to: "/dashboard", label: "Início" },
     { to: "/vagas", label: "Vagas" },
     { to: "/companies", label: "Empresas" },
     { to: "/categories", label: "Categorias" },

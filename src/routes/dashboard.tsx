@@ -47,7 +47,6 @@ function Dashboard() {
   if (isPending) return <AuthSplash />;
   if (!user) return <RedirectToSignIn />;
   if (loading) return <AuthSplash />;
-  if (profile && !profile.onboarded) return <Navigate to="/onboarding" />;
   if (profile?.role === "employer") return <Navigate to="/employer" />;
   if (profile?.role === "admin") return <Navigate to="/admin" />;
 
