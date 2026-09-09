@@ -1,4 +1,5 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { LoginForm } from "@/components/auth-screen";
 import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 
 export const Route = createFileRoute("/")({
@@ -11,7 +12,5 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: function Home() {
-    return <Navigate to="/dashboard" />;
-  },
+  component: LoginForm,
 });

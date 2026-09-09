@@ -1,11 +1,8 @@
-import { useLocation } from "@tanstack/react-router";
 import { APP_NAME } from "@/lib/brand";
 
 export const SUPPORT_WHATSAPP = "258852174503";
 export const SUPPORT_TEXT = `Olá! Preciso de ajuda no ${APP_NAME}.`;
 export const SUPPORT_LOGIN_TEXT = `Olá! Tenho uma dúvida sobre o ${APP_NAME} e preciso de ajuda para entrar na plataforma.`;
-
-const AUTH_PATHS = ["/login", "/register", "/criar-conta", "/forgot-password", "/reset-password"];
 
 export function supportUrl(text = SUPPORT_TEXT) {
   return `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(text)}`;
@@ -52,8 +49,6 @@ export function SupportNavLink() {
 }
 
 export function SupportFloatButton() {
-  const pathname = useLocation({ select: (l) => l.pathname });
-  if (AUTH_PATHS.some((p) => pathname.startsWith(p))) return null;
   return (
     <a
       href={supportUrl()}

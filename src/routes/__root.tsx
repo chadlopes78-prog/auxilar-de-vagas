@@ -9,6 +9,7 @@ import appCss from "../styles.css?url";
 
 function isPublicPath(pathname: string) {
   return (
+    pathname === "/" ||
     pathname === "/login" ||
     pathname === "/register" ||
     pathname === "/criar-conta" ||
