@@ -5,6 +5,7 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { recalcCompleteness } from "@/lib/server/candidate";
 import { executeSubmit } from "@/lib/server/apply";
 import { sendWelcomeEmail } from "@/lib/server/mail";
+import { isOwnerAdminEmail } from "@/lib/brand";
 import type {
   ApplicationRow,
   JobAlertRow,
@@ -136,6 +137,9 @@ export const ensureProfile = createServerFn({ method: "POST" })
       insert into candidate_profiles (user_id) values (${context.userId})
       on conflict (user_id) do nothing
     `;
+    if (isOwnerAdminEmail(data.email)) {
+      await sql`update profiles set role = 'admin', email = ${data.email} where user_id = ${context.userId}`;
+    }
     let welcomeEmailSent = false;
     try {
       const pending = await sql<{ email: string | null; full_name: string | null }>`

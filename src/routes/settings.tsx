@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/use-profile";
 import { claimAdmin } from "@/lib/server/admin";
 import { ROLE_PT } from "@/lib/i18n";
+import { isOwnerAdminEmail } from "@/lib/brand";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({
@@ -30,7 +31,7 @@ function Settings() {
           <Button variant="outline" onClick={() => signOut()}>
             Sair
           </Button>
-          {profile?.role !== "admin" ? (
+          {profile?.role !== "admin" && isOwnerAdminEmail(user.primaryEmail) ? (
             <Button
               variant="outline"
               onClick={async () => {
@@ -43,7 +44,7 @@ function Settings() {
                 }
               }}
             >
-              Assumir administração (se ainda não existir)
+              Assumir administração
             </Button>
           ) : null}
           </div>

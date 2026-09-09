@@ -2,24 +2,31 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getSql } from "@/lib/db";
 import { authMiddleware } from "@/lib/auth/middleware";
+import { isOwnerAdminEmail } from "@/lib/brand";
 
 async function requireAdmin(userId: string) {
   const sql = await getSql();
-  const rows = await sql<{ role: string }>`select role from profiles where user_id = ${userId}`;
-  if (rows[0]?.role !== "admin") {
-    const admins = await sql<{ n: number }>`select count(*)::int as n from profiles where role = 'admin'`;
-    if (Number(admins[0]?.n ?? 0) === 0) return sql;
-    throw new Error("Apenas administradores");
+  const rows = await sql<{ role: string; email: string | null }>`
+    select role, email from profiles where user_id = ${userId}
+  `;
+  if (rows[0]?.role === "admin") return sql;
+  if (isOwnerAdminEmail(rows[0]?.email)) {
+    await sql`update profiles set role = 'admin' where user_id = ${userId}`;
+    return sql;
   }
-  return sql;
+  throw new Error("Apenas administradores");
 }
 
 export const claimAdmin = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await getSql();
-    const admins = await sql<{ n: number }>`select count(*)::int as n from profiles where role = 'admin'`;
-    if (Number(admins[0]?.n ?? 0) > 0) throw new Error("Já existe um administrador");
+    const rows = await sql<{ email: string | null }>`
+      select email from profiles where user_id = ${context.userId}
+    `;
+    if (!isOwnerAdminEmail(rows[0]?.email)) {
+      throw new Error("A administração está reservada ao dono da plataforma.");
+    }
     await sql`update profiles set role = 'admin' where user_id = ${context.userId}`;
     return { ok: true };
   });

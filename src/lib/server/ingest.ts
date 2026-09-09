@@ -8,17 +8,20 @@ import { getConnector, getConnectorBySlug, PRIMARY_SOURCE_SLUGS } from "@/lib/se
 import { writeIntegrationLog } from "@/lib/server/connectors/log";
 import type { NormalizedJob } from "@/lib/server/connectors/types";
 import type { JobSource } from "@/lib/types";
+import { isOwnerAdminEmail } from "@/lib/brand";
 import { clearLocationCache } from "@/lib/server/jobs";
 
 async function requireAdmin(userId: string) {
   const sql = await getSql();
-  const rows = await sql<{ role: string }>`select role from profiles where user_id = ${userId}`;
-  if (rows[0]?.role !== "admin") {
-    const admins = await sql<{ n: number }>`select count(*)::int as n from profiles where role = 'admin'`;
-    if (Number(admins[0]?.n ?? 0) === 0) return sql;
-    throw new Error("Apenas administradores");
+  const rows = await sql<{ role: string; email: string | null }>`
+    select role, email from profiles where user_id = ${userId}
+  `;
+  if (rows[0]?.role === "admin") return sql;
+  if (isOwnerAdminEmail(rows[0]?.email)) {
+    await sql`update profiles set role = 'admin' where user_id = ${userId}`;
+    return sql;
   }
-  return sql;
+  throw new Error("Apenas administradores");
 }
 
 type SourceRow = {

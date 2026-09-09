@@ -8,6 +8,7 @@ import { DashShell, DashPage, StatCard } from "@/components/dash-nav";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/use-profile";
 import { adminListJobs, adminStats, adminUpdateJob, claimAdmin } from "@/lib/server/admin";
+import { isOwnerAdminEmail } from "@/lib/brand";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/")({
@@ -45,26 +46,31 @@ function Admin() {
   if (loading) return <AuthSplash />;
 
   if (profile?.role !== "admin") {
+    const canClaim = isOwnerAdminEmail(user.primaryEmail);
     return (
       <Shell>
         <div className="mx-auto max-w-lg px-4 py-16 text-center">
           <h1 className="text-2xl">Acesso de administrador</h1>
           <p className="mt-2 text-sm text-muted">
-            O primeiro utilizador autenticado pode assumir a administração se ainda não existir nenhum.
+            {canClaim
+              ? "Esta conta está autorizada a gerir a plataforma."
+              : "Esta área é reservada ao administrador da plataforma."}
           </p>
-          <Button
-            className="mt-4"
-            onClick={async () => {
-              try {
-                await claimAdmin();
-                window.location.reload();
-              } catch (e) {
-                toast.error(e instanceof Error ? e.message : "Negado");
-              }
-            }}
-          >
-            Assumir administração
-          </Button>
+          {canClaim ? (
+            <Button
+              className="mt-4"
+              onClick={async () => {
+                try {
+                  await claimAdmin();
+                  window.location.reload();
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Negado");
+                }
+              }}
+            >
+              Assumir administração
+            </Button>
+          ) : null}
         </div>
       </Shell>
     );
