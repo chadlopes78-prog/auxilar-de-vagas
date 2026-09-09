@@ -226,6 +226,7 @@ export function ApplyModal({
             <SentDone
               title={ctx.title}
               company={ctx.companyName}
+              companyEmail={ctx.applyEmail}
               message={resultMsg}
               onClose={onClose}
             />
@@ -398,11 +399,13 @@ export function ApplyModal({
 function SentDone({
   title,
   company,
+  companyEmail,
   message,
   onClose,
 }: {
   title: string;
   company: string;
+  companyEmail?: string | null;
   message: string;
   onClose: () => void;
 }) {
@@ -416,6 +419,11 @@ function SentDone({
       <p className="mt-2 text-sm text-muted">
         {title} · {company}
       </p>
+      {companyEmail ? (
+        <p className="mt-3 text-sm">
+          E-mail da empresa: <strong>{companyEmail}</strong>
+        </p>
+      ) : null}
       <a
         href={supportUrl(applyHelpText(title, company))}
         target="_blank"

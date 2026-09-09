@@ -108,6 +108,16 @@ async function persistOfficialEmail(jobId: number, email: string) {
   `;
 }
 
+async function rememberCompanyEmail(applicationId: number, email: string | null) {
+  if (!email) return;
+  const sql = await getSql();
+  try {
+    await sql`update applications set company_email = ${email} where id = ${applicationId}`;
+  } catch {
+    /* column is added by migration 0017 */
+  }
+}
+
 async function deliverCompanyMail(input: {
   to: string | null;
   candidateName: string;
@@ -433,6 +443,7 @@ export async function executeSubmit(
       certifications: bundle.certifications,
       answers,
       liveLocation: data.liveLocation || null,
+      companyEmail: officialEmail,
     };
     const method =
       channel === "official_api"
@@ -460,6 +471,7 @@ export async function executeSubmit(
         ) returning id
       `;
       await persistAnswers(inserted[0].id, questions, answers);
+      await rememberCompanyEmail(inserted[0].id, officialEmail);
       await writeIntegrationLog({
         sourceSlug: slug,
         operation: "prepare_redirect",
@@ -498,6 +510,7 @@ export async function executeSubmit(
     `;
     const applicationId = sending[0].id;
     await persistAnswers(applicationId, questions, answers);
+    await rememberCompanyEmail(applicationId, officialEmail);
 
     if (channel === "email") {
       const answerLines: Record<string, string> = {};

@@ -343,10 +343,12 @@ export const listMyApplications = createServerFn({ method: "GET" })
       external_status: string | null;
       submitted_at: string | null;
       answers: unknown;
+      company_email: string | null;
     }>`
       select a.id, a.job_id, j.title, co.name as company_name, a.status, a.created_at,
         a.method, a.source_name, a.country_name, a.official_url, a.status_note,
         a.external_status, a.submitted_at,
+        coalesce(a.company_email, j.apply_email) as company_email,
         (select json_agg(json_build_object('key', q.question_key, 'question', q.question_text, 'answer', q.answer) order by q.id)
          from application_answers q where q.application_id = a.id) as answers
       from applications a
@@ -374,6 +376,7 @@ export const listMyApplications = createServerFn({ method: "GET" })
       externalStatus: r.external_status,
       submittedAt: r.submitted_at ? String(r.submitted_at) : null,
       answers: parseStoredAnswers(r.answers),
+      companyEmail: r.company_email,
     }));
   });
 

@@ -5,7 +5,7 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { fingerprint } from "@/lib/utils";
 import { resolveApplyChannel, sourceSlugFrom } from "@/lib/server/connectors";
 import { cityToSlug, countrySlug, localizeCityName, localizeRegionName, regionToSlug } from "@/lib/i18n";
-import { isGarbagePlaceName } from "@/lib/server/connectors/rss";
+import { extractPublishedEmail, isGarbagePlaceName } from "@/lib/server/connectors/rss";
 import type {
   CompanyCard,
   JobCard,
@@ -408,14 +408,23 @@ export const getJob = createServerFn({ method: "GET" })
     );
     const r = rows[0];
     if (!r) return null;
+    let applyEmail = r.apply_email;
+    if (!applyEmail) {
+      applyEmail = extractPublishedEmail(
+        [r.description, r.requirements, r.qualifications, r.responsibilities].filter(Boolean).join("\n"),
+      );
+      if (applyEmail) {
+        await sql`update jobs set apply_email = ${applyEmail} where id = ${id} and apply_email is null`;
+      }
+    }
     return {
-      ...toCard(r),
+      ...toCard({ ...r, apply_email: applyEmail }),
       description: r.description,
       responsibilities: r.responsibilities,
       requirements: r.requirements,
       qualifications: r.qualifications,
       benefits: r.benefits,
-      applyEmail: r.apply_email,
+      applyEmail,
       companyDescription: r.company_description,
       companyIndustry: r.company_industry,
       companyWebsite: r.company_website,

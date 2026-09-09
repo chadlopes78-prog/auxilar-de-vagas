@@ -177,6 +177,7 @@ export type ApplicationRow = {
   externalStatus?: string | null;
   submittedAt?: string | null;
   answers?: { key: string; question: string; answer: string }[] | null;
+  companyEmail?: string | null;
 };
 
 export type ApplyContext = {

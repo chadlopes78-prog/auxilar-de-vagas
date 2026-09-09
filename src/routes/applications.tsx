@@ -67,6 +67,18 @@ function Apps() {
                         {" · "}
                         {new Date(a.createdAt).toLocaleDateString("pt-PT")}
                       </div>
+                      {a.companyEmail ? (
+                        <p className="mt-2 text-sm">
+                          Enviada para o e-mail da empresa:{" "}
+                          <a className="font-medium text-primary" href={`mailto:${a.companyEmail}`}>
+                            {a.companyEmail}
+                          </a>
+                        </p>
+                      ) : (
+                        <p className="mt-2 text-sm text-muted">
+                          Esta vaga ainda não tem um e-mail oficial publicado.
+                        </p>
+                      )}
                     </div>
                     <ApplyMethodBadge
                       channel={

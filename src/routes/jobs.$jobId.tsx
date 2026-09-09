@@ -112,6 +112,14 @@ function JobDetailPage() {
           </p>
           <p className="text-sm text-muted">Prazo de candidatura: {job.deadline ?? "Aberto"}</p>
           <p className="mt-2 text-sm">Fonte: {job.sourceName}</p>
+          {job.applyEmail ? (
+            <p className="mt-2 text-sm">
+              E-mail oficial da empresa:{" "}
+              <a className="font-medium text-primary" href={`mailto:${job.applyEmail}`}>
+                {job.applyEmail}
+              </a>
+            </p>
+          ) : null}
           <Section title="Descrição da vaga">{job.description}</Section>
           <Section title="Responsabilidades">{job.responsibilities}</Section>
           <Section title="Requisitos">{job.requirements}</Section>
@@ -126,11 +134,13 @@ function JobDetailPage() {
           <div className="font-semibold">{job.companyName}</div>
           <p className="text-sm text-muted">{job.companyIndustry}</p>
           <p className="mt-3 text-xs text-muted">
-            {job.applyChannel === "official_redirect"
-              ? "Prepara a candidatura aqui. O envio final é no portal oficial."
-              : job.applyChannel === "official_api"
-                ? "Candidatura rápida disponível para esta vaga."
-                : "Candidatura enviada directamente no Auxilar de Vagas."}
+            {job.applyEmail
+              ? `A candidatura é enviada para o e-mail oficial ${job.applyEmail}.`
+              : job.applyChannel === "official_redirect"
+                ? "Prepara a candidatura aqui. O envio final é no portal oficial."
+                : job.applyChannel === "official_api"
+                  ? "Candidatura rápida disponível para esta vaga."
+                  : "Candidatura enviada directamente no Auxilar de Vagas."}
           </p>
           <div className="mt-4 space-y-2">
             {applyBtn}
