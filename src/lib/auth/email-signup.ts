@@ -12,14 +12,37 @@ async function postAuth(path: string, body: Record<string, string>): Promise<{
   status: number;
   data: AuthJson;
 }> {
-  const res = await fetch(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body),
-  });
-  const data = (await res.json().catch(() => ({}))) as AuthJson;
-  return { ok: res.ok, status: res.status, data };
+  const ctrl = new AbortController();
+  const timer = window.setTimeout(() => ctrl.abort(), 20000);
+  try {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      signal: ctrl.signal,
+      body: JSON.stringify(body),
+    });
+    const text = await res.text();
+    let data: AuthJson = {};
+    try {
+      data = text ? (JSON.parse(text) as AuthJson) : {};
+    } catch {
+      data = { message: "O servidor não respondeu correctamente. Tente novamente." };
+    }
+    return { ok: res.ok, status: res.status, data };
+  } catch (err) {
+    const aborted = err instanceof Error && err.name === "AbortError";
+    throw Object.assign(
+      new Error(
+        aborted
+          ? "A ligação demorou demasiado. Verifique a internet e tente novamente."
+          : "Não foi possível contactar o servidor. Verifique a internet e tente novamente.",
+      ),
+      { status: 0 },
+    );
+  } finally {
+    window.clearTimeout(timer);
+  }
 }
 
 function fail(data: AuthJson, status: number): never {

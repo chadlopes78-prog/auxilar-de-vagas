@@ -5,8 +5,6 @@ import { createEmailAccount, signInEmailAccount } from "@/lib/auth/email-signup"
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { GuestOnly } from "@/components/require-auth";
-import { ensureProfile, updateProfile } from "@/lib/server/account";
-import { useLocationStore } from "@/store/location";
 import { APP_MARK, APP_NAME } from "@/lib/brand";
 import { toast } from "sonner";
 import { SUPPORT_LOGIN_TEXT, supportUrl, WhatsAppIcon } from "@/components/support-whatsapp";
@@ -205,7 +203,6 @@ export function LoginForm() {
 }
 
 export function RegisterForm() {
-  const loc = useLocationStore();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -216,6 +213,12 @@ export function RegisterForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    const name = fullName.trim();
+    const mail = email.trim().toLowerCase();
+    if (!name) {
+      setError("Escreva o seu nome.");
+      return;
+    }
     if (password.length < 8) {
       setError("A palavra-passe deve ter pelo menos 8 caracteres.");
       return;
@@ -226,22 +229,11 @@ export function RegisterForm() {
     }
     setBusy(true);
     try {
-      const result = await createEmailAccount({ email, password, name: fullName });
-      try {
-        await ensureProfile({ data: { email, name: fullName } });
-        await updateProfile({
-          data: {
-            role: "candidate",
-            fullName,
-            email,
-            countryId: loc.countryId || 1,
-            regionId: loc.regionId || null,
-            cityId: loc.cityId || null,
-          },
-        });
-      } catch {
-        /* profile is created on the dashboard if this fails */
-      }
+      const result = await createEmailAccount({
+        email: mail,
+        password,
+        name,
+      });
       toast.success(
         result.created ? "Conta criada com sucesso." : "Já tinha conta. Sessão iniciada.",
       );
