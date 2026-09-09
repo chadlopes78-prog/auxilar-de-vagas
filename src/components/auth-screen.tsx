@@ -1,7 +1,7 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
-import { createEmailAccount } from "@/lib/auth/email-signup";
+import { authEnabled } from "@/lib/auth/client";
+import { createEmailAccount, signInEmailAccount } from "@/lib/auth/email-signup";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { GuestOnly } from "@/components/require-auth";
@@ -92,28 +92,17 @@ function GoogleMark() {
   );
 }
 
-function SocialButtons({ callbackURL }: { callbackURL: string }) {
-  const [busy, setBusy] = useState<string | null>(null);
+function SocialButtons({ callbackURL: _callbackURL }: { callbackURL: string }) {
   const [error, setError] = useState("");
   if (!authEnabled) {
     return <p className="text-sm text-muted">O início de sessão está desactivado.</p>;
   }
 
-  async function start(providerId: string) {
-    setError("");
-    setBusy(providerId);
-    try {
-      await signIn(providerId, { callbackURL, errorCallbackURL: "/login" });
-    } catch (err) {
-      const message = authErrorMessage(
-        err,
-        "O login com Google ainda não está activo neste site. Crie conta com email e palavra-passe.",
-      );
-      setError(message);
-      toast.error(message);
-    } finally {
-      setBusy(null);
-    }
+  function start() {
+    const message =
+      "O login com Google ainda não está activo neste site. Crie conta com email e palavra-passe.";
+    setError(message);
+    toast.error(message);
   }
 
   return (
@@ -122,24 +111,11 @@ function SocialButtons({ callbackURL }: { callbackURL: string }) {
         type="button"
         variant="outline"
         className="w-full gap-2 bg-white text-neutral-800 hover:bg-neutral-50"
-        disabled={Boolean(busy)}
-        onClick={() => void start("grok-google")}
+        onClick={start}
       >
         <GoogleMark />
-        {busy === "grok-google" ? "A ligar ao Google…" : "Continuar com Google"}
+        Continuar com Google
       </Button>
-      {GROK_PROVIDERS.filter((p) => p.idp !== "google").map((p) => (
-        <Button
-          key={p.providerId}
-          type="button"
-          variant="outline"
-          className="w-full"
-          disabled={Boolean(busy)}
-          onClick={() => void start(p.providerId)}
-        >
-          {busy === p.providerId ? "A ligar…" : `Continuar com ${p.label}`}
-        </Button>
-      ))}
       {error ? (
         <p className="text-sm text-danger" role="alert">
           {error}
@@ -154,21 +130,20 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   async function onEmail(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setBusy(true);
-    const { error: err } = await authClient.signIn.email({ email, password });
-    setBusy(false);
-    if (err) {
+    try {
+      await signInEmailAccount({ email, password });
+      window.location.assign("/dashboard");
+    } catch (err) {
       const message = authErrorMessage(err, "Email ou palavra-passe incorrectos.");
       setError(message);
       toast.error(message);
-      return;
+      setBusy(false);
     }
-    navigate({ to: "/dashboard" });
   }
 
   return (

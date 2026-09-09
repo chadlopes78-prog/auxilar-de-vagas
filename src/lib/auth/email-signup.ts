@@ -32,10 +32,18 @@ function fail(data: AuthJson, status: number): never {
   throw err;
 }
 
-/**
- * Create an account, or sign in if that email already exists with this password.
- * Stores the session token so the dashboard can load without relying only on cookies.
- */
+export async function signInEmailAccount(input: {
+  email: string;
+  password: string;
+}): Promise<void> {
+  const signin = await postAuth("/api/auth/sign-in/email", input);
+  if (signin.ok && (signin.data.user || signin.data.token)) {
+    rememberSessionToken(signin.data.token);
+    return;
+  }
+  fail(signin.data, signin.status);
+}
+
 export async function createEmailAccount(input: {
   email: string;
   password: string;
@@ -49,15 +57,17 @@ export async function createEmailAccount(input: {
 
   const code = signup.data.code || "";
   if (signup.status === 422 || code.includes("USER_ALREADY_EXISTS")) {
-    const signin = await postAuth("/api/auth/sign-in/email", {
-      email: input.email,
-      password: input.password,
-    });
-    if (signin.ok && (signin.data.user || signin.data.token)) {
-      rememberSessionToken(signin.data.token);
+    try {
+      await signInEmailAccount({ email: input.email, password: input.password });
       return { created: false };
+    } catch {
+      const err = new Error(
+        "Já existe uma conta com este email. Entre com a palavra-passe correcta.",
+      ) as Error & { code?: string; status?: number };
+      err.code = "USER_ALREADY_EXISTS";
+      err.status = 422;
+      throw err;
     }
-    fail(signin.data.code ? signin.data : signup.data, signin.status);
   }
 
   fail(signup.data, signup.status);
