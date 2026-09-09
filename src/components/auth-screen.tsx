@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
+import { createEmailAccount } from "@/lib/auth/email-signup";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { GuestOnly } from "@/components/require-auth";
@@ -102,20 +103,12 @@ function SocialButtons({ callbackURL }: { callbackURL: string }) {
     setError("");
     setBusy(providerId);
     try {
-      if (providerId === "grok-google") {
-        const native = await authClient.signIn.social({
-          provider: "google",
-          callbackURL,
-          errorCallbackURL: "/login",
-        }).catch(() => ({ error: { message: "native-unavailable" }, data: null }));
-        if (!native.error && native.data?.url) {
-          window.location.href = native.data.url;
-          return;
-        }
-      }
       await signIn(providerId, { callbackURL, errorCallbackURL: "/login" });
     } catch (err) {
-      const message = authErrorMessage(err, "Não foi possível entrar com esta conta.");
+      const message = authErrorMessage(
+        err,
+        "O login com Google ainda não está activo neste site. Crie conta com email e palavra-passe.",
+      );
       setError(message);
       toast.error(message);
     } finally {
@@ -237,7 +230,6 @@ export function LoginForm() {
 }
 
 export function RegisterForm() {
-  const navigate = useNavigate();
   const loc = useLocationStore();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -259,15 +251,9 @@ export function RegisterForm() {
     }
     setBusy(true);
     try {
-      const { error: err } = await authClient.signUp.email({ email, password, name: fullName });
-      if (err) {
-        const message = authErrorMessage(err, "Não foi possível criar a conta.");
-        setError(message);
-        toast.error(message);
-        return;
-      }
+      const result = await createEmailAccount({ email, password, name: fullName });
       try {
-        const created = await ensureProfile({ data: { email, name: fullName } });
+        await ensureProfile({ data: { email, name: fullName } });
         await updateProfile({
           data: {
             role: "candidate",
@@ -278,20 +264,17 @@ export function RegisterForm() {
             cityId: loc.cityId || null,
           },
         });
-        toast.success(
-          created.welcomeEmailSent
-            ? "Conta criada. Enviámos um e-mail de boas-vindas."
-            : "Conta criada com sucesso.",
-        );
       } catch {
         /* profile is created on the dashboard if this fails */
       }
-      navigate({ to: "/dashboard" });
+      toast.success(
+        result.created ? "Conta criada com sucesso." : "Já tinha conta. Sessão iniciada.",
+      );
+      window.location.assign("/dashboard");
     } catch (err) {
       const message = authErrorMessage(err, "Não foi possível criar a conta.");
       setError(message);
       toast.error(message);
-    } finally {
       setBusy(false);
     }
   }

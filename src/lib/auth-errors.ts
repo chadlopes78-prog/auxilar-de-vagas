@@ -11,6 +11,8 @@ const CODE_MESSAGES: Record<string, string> = {
   FAILED_TO_CREATE_USER: "Não foi possível criar a conta. Tente novamente dentro de instantes.",
   SIGN_UP_DISABLED: "O registo está temporariamente indisponível.",
   ACCOUNT_NOT_LINKED: "Esta conta Google já está associada a outro método de entrada.",
+  VALIDATION_ERROR: "Verifique os dados do formulário e tente novamente.",
+  PROVIDER_NOT_FOUND: "O login com Google ainda não está activo neste site. Use email e palavra-passe.",
 };
 
 export function authErrorMessage(
