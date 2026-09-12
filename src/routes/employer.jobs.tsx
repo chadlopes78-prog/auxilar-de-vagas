@@ -27,7 +27,7 @@ function MyJobs() {
     <Shell>
       <DashShell profile={profile} active="/employer/jobs">
         <DashPage title="As minhas vagas">
-        <div className="mt-4 space-y-3">
+        <div className="mt-4">
           {jobs.length === 0 ? (
             <EmptyPanel
               title="Ainda não há vagas publicadas por si."

@@ -9,7 +9,7 @@ import { listNotifications, markNotificationsRead } from "@/lib/server/account";
 import type { NotificationRow } from "@/lib/types";
 
 export const Route = createFileRoute("/notifications")({
-  head: () => ({ meta: [{ title: "Notificações | Auxilar de Vagas" }] }),
+  head: () => ({ meta: [{ title: "Notificações | Auxiliar de Vagas" }] }),
   component: Notes,
 });
 
@@ -35,9 +35,9 @@ function Notes() {
           {rows.length === 0 ? (
             <EmptyPanel title="Ainda não tem notificações." hint="Quando houver novidades sobre vagas ou candidaturas, aparecem aqui." />
           ) : (
-            <div className="space-y-2">
+            <div>
               {rows.map((n) => (
-                <div key={n.id} className="dash-card p-4">
+                <div key={n.id} className="border-b border-border py-4">
                   <div className="font-medium">{n.title}</div>
                   <div className="text-sm text-muted">{n.body}</div>
                 </div>

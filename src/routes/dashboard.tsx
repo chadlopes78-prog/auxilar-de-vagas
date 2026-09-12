@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
-import { Bookmark, Briefcase, FileText, MapPin, Search, UserRound } from "lucide-react";
+import { Bookmark, Briefcase, FileText, Search, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { AuthSplash } from "@/components/require-auth";
@@ -13,7 +13,7 @@ import { searchJobs } from "@/lib/server/jobs";
 import type { JobCard } from "@/lib/types";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({ meta: [{ title: "Painel | Auxilar de Vagas" }] }),
+  head: () => ({ meta: [{ title: "Painel | Auxiliar de Vagas" }] }),
   component: Dashboard,
 });
 
@@ -57,64 +57,58 @@ function Dashboard() {
   return (
     <Shell>
       <DashShell profile={profile} active="/dashboard">
-        <section className="dash-hero p-5 md:p-8">
-          <p className="text-sm text-primary-fg/70">O seu painel</p>
-          <h1 className="mt-1 text-2xl text-primary-fg sm:text-3xl md:text-4xl">Olá{first ? `, ${first}` : ""}</h1>
-          <p className="mt-2 flex items-center gap-1.5 text-sm text-primary-fg/80">
-            <MapPin className="size-4" />
+        <section className="dash-hero mb-8">
+          <h1 className="text-3xl sm:text-4xl">Olá{first ? `, ${first}` : ""}</h1>
+          <p className="mt-2 text-sm text-muted">
             {place || "Escolha a localização para ver vagas perto de si"}
           </p>
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <Link to="/vagas" className="w-full sm:w-auto">
-              <Button className="w-full bg-surface text-fg hover:bg-bg sm:w-auto">
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link to="/vagas">
+              <Button>
                 <Search className="size-4" />
                 Procurar vagas
               </Button>
             </Link>
-            <Link to="/cv" className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full border-primary-fg/20 bg-transparent text-primary-fg hover:bg-primary-hover sm:w-auto">
-                Completar o CV
-              </Button>
+            <Link to="/cv">
+              <Button variant="outline">Completar o CV</Button>
             </Link>
           </div>
         </section>
 
-        <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-6 border-b border-border pb-8 md:grid-cols-4">
           <StatCard value={apps} label="Candidaturas" icon={Briefcase} to="/applications" />
-          <StatCard value={saved} label="Vagas guardadas" icon={Bookmark} to="/saved" />
-          <StatCard value={`${complete}%`} label="Perfil completo" icon={UserRound} to="/cv" />
+          <StatCard value={saved} label="Guardadas" icon={Bookmark} to="/saved" />
+          <StatCard value={`${complete}%`} label="Perfil" icon={UserRound} to="/cv" />
           <StatCard value={jobs.length} label="Recomendadas" icon={FileText} />
         </div>
 
-        <div className="dash-card mt-5 p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl">Complete o seu perfil</h2>
-              <p className="mt-1 text-sm text-muted">
-                O perfil está {complete}% completo. Quanto mais completo, mais fácil é candidatar-se.
-              </p>
-            </div>
-            <Link to="/cv">
-              <Button variant="outline">Editar CV</Button>
-            </Link>
+        <div className="mt-8 flex items-end justify-between gap-3 border-b border-border pb-6">
+          <div>
+            <h2 className="text-2xl">Complete o seu perfil</h2>
+            <p className="mt-1 text-sm text-muted">O perfil está {complete}% completo.</p>
           </div>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-border">
-            <div className="h-full rounded-full bg-primary" style={{ width: `${complete}%` }} />
-          </div>
+          <Link to="/cv">
+            <Button variant="outline" size="sm">
+              Editar CV
+            </Button>
+          </Link>
+        </div>
+        <div className="mt-4 h-px overflow-hidden bg-border">
+          <div className="h-full bg-primary" style={{ width: `${complete}%` }} />
         </div>
 
-        <div className="mt-8 flex flex-wrap items-end justify-between gap-2">
+        <div className="mt-10 flex items-end justify-between gap-2">
           <div>
-            <h2 className="text-xl">Recomendadas para si</h2>
-            <p className="text-sm text-muted">
-              Com base em {profile?.cityName ?? "a sua localização"}, nas suas categorias e na experiência.
+            <h2 className="text-2xl">Recomendadas para si</h2>
+            <p className="mt-1 text-sm text-muted">
+              Com base em {profile?.cityName ?? "a sua localização"}.
             </p>
           </div>
-          <Link to="/vagas" className="text-sm font-medium text-primary">
+          <Link to="/vagas" className="text-sm text-primary">
             Ver todas
           </Link>
         </div>
-        <div className="mt-3 space-y-3">
+        <div className="mt-4">
           {jobs.length === 0 ? (
             <p className="text-sm text-muted">Ainda não há vagas recomendadas nesta localização.</p>
           ) : (

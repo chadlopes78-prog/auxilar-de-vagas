@@ -26,7 +26,7 @@ function Locs() {
     <Shell>
       <DashShell profile={profile} active="/admin/locations">
         <DashPage title="Localizações e categorias">
-        <div className="mt-4 space-y-3 dash-card p-5">
+        <div className="mt-4 space-y-3 border-t border-border pt-6">
           <Select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)}>
             <option value="country">País</option>
             <option value="region">Província / distrito</option>

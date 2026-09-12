@@ -14,7 +14,7 @@ export const Route = createFileRoute("/vagas/$country/")({
     const name = slugToCountryName(params.country);
     return {
       meta: [
-        { title: `Vagas em ${name} | Auxilar de Vagas` },
+        { title: `Vagas em ${name} | Auxiliar de Vagas` },
         {
           name: "description",
           content: `Pesquise vagas de emprego em ${name}. Agregamos oportunidades de fontes autorizadas e de empresas que publicam directamente.`,
@@ -78,10 +78,10 @@ function CountryJobs() {
           heading={`Todas as vagas em ${name}`}
           subheading={
             code === "MZ"
-              ? "Pesquisa única em Emprego.co.mz, O Emprego, Saplic, TodasVagas e Auxilar de Vagas. Fontes sem autorização ficam pendentes — não inventamos vagas."
+              ? "Pesquisa única em Emprego.co.mz, O Emprego, Saplic, TodasVagas e Auxiliar de Vagas. Fontes sem autorização ficam pendentes — não inventamos vagas."
               : code === "AO"
-                ? "Pesquisa única em Jobartis e Auxilar de Vagas. Fontes sem autorização ficam pendentes — não inventamos vagas."
-                : "Pesquisa única em IEFP Online, ITJobs, Net-Empregos e Auxilar de Vagas. Fontes sem autorização ficam pendentes — não inventamos vagas."
+                ? "Pesquisa única em Jobartis e Auxiliar de Vagas. Fontes sem autorização ficam pendentes — não inventamos vagas."
+                : "Pesquisa única em IEFP Online, ITJobs, Net-Empregos e Auxiliar de Vagas. Fontes sem autorização ficam pendentes — não inventamos vagas."
           }
         />
       </div>

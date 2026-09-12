@@ -30,7 +30,7 @@ function Users() {
         <DashPage title="Utilizadores">
         <div className="mt-4 space-y-2">
           {rows.map((u) => (
-            <div key={u.user_id} className="flex flex-wrap items-center justify-between gap-2 dash-card p-3">
+            <div key={u.user_id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-4">
               <div>
                 <div className="font-medium">{u.full_name || "Sem nome"}</div>
                 <div className="text-xs text-muted">{u.email}</div>

@@ -12,7 +12,7 @@ import { getJob } from "@/lib/server/jobs";
 import type { JobCard } from "@/lib/types";
 
 export const Route = createFileRoute("/saved")({
-  head: () => ({ meta: [{ title: "Vagas guardadas | Auxilar de Vagas" }] }),
+  head: () => ({ meta: [{ title: "Vagas guardadas | Auxiliar de Vagas" }] }),
   component: Saved,
 });
 
@@ -35,9 +35,9 @@ function Saved() {
     <Shell>
       <DashShell profile={profile} active="/saved">
         <DashPage title="Vagas guardadas" subtitle="As oportunidades que guardou para ver mais tarde.">
-        <div className="space-y-3">
+        <div>
           {jobs == null ? (
-            <div className="h-24 animate-pulse rounded-2xl bg-border/60" />
+            <div className="h-24 animate-pulse border-b border-border" />
           ) : jobs.length === 0 ? (
             <EmptyPanel
               title="Ainda não guardou nenhuma vaga."

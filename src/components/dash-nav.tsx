@@ -11,13 +11,12 @@ import {
   Search,
   Settings,
   Shield,
+  UserRound,
   Users,
 } from "lucide-react";
 import { signOut } from "@/lib/auth/client";
 import type { Profile } from "@/lib/types";
 import { ROLE_PT } from "@/lib/i18n";
-import { initials } from "@/lib/utils";
-import { SupportNavLink } from "@/components/support-whatsapp";
 
 const ICONS: Record<string, typeof LayoutGrid> = {
   "/admin": LayoutGrid,
@@ -60,12 +59,12 @@ function navItems(role: string) {
     ] as const;
   }
   return [
-    ["/dashboard", "Visão geral"],
-    ["/vagas", "Procurar vagas"],
-    ["/saved", "Vagas guardadas"],
+    ["/dashboard", "Início"],
+    ["/vagas", "Vagas"],
+    ["/saved", "Guardadas"],
     ["/applications", "Candidaturas"],
-    ["/cv", "O meu CV"],
-    ["/alerts", "Alertas de vagas"],
+    ["/cv", "Perfil"],
+    ["/alerts", "Alertas"],
     ["/settings", "Definições"],
   ] as const;
 }
@@ -77,17 +76,10 @@ export function DashNav({ profile, active }: { profile: Profile | null; active: 
   const roleLabel = ROLE_PT[role] ?? role;
 
   return (
-    <nav className="dash-card p-2 md:p-3">
-      <div className="mb-2 hidden items-center gap-3 rounded-xl bg-bg px-3 py-3 md:flex">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary text-sm font-semibold text-primary-fg">
-          {initials(name) || "AV"}
-        </span>
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold">{name.split(" ")[0]}</div>
-          <div className="truncate text-xs text-muted">{roleLabel}</div>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:block">
+    <nav className="hidden md:block">
+      <p className="mb-5 font-display text-xl font-bold leading-tight">{name.split(" ")[0]}</p>
+      <p className="mb-6 text-xs uppercase tracking-[0.16em] text-muted">{roleLabel}</p>
+      <div className="space-y-0.5">
         {items.map(([to, label]) => {
           const Icon = ICONS[to] ?? LayoutGrid;
           const on = active === to;
@@ -95,24 +87,55 @@ export function DashNav({ profile, active }: { profile: Profile | null; active: 
             <Link
               key={to}
               to={to}
-              className={`dash-nav-link min-w-0 ${
-                on ? "bg-primary-soft font-medium text-primary" : "text-fg/80 hover:bg-bg"
-              }`}
+              className={`dash-nav-link ${on ? "bg-primary-soft text-primary" : "text-muted hover:text-fg"}`}
             >
               <Icon className="size-4 shrink-0" />
               <span className="truncate">{label}</span>
             </Link>
           );
         })}
-        <SupportNavLink />
         <button
           type="button"
-          className="dash-nav-link mt-0 hidden w-full text-left text-muted hover:bg-bg hover:text-fg md:flex"
+          className="dash-nav-link w-full text-left text-muted hover:text-fg"
           onClick={() => signOut()}
         >
           <LogOut className="size-4" />
           Sair
         </button>
+      </div>
+    </nav>
+  );
+}
+
+const MOBILE_TABS = [
+  ["/dashboard", "Início", LayoutGrid],
+  ["/vagas", "Vagas", Search],
+  ["/applications", "Candidaturas", FileText],
+  ["/cv", "Perfil", UserRound],
+] as const;
+
+export function MobileTabs({ active }: { active: string }) {
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden">
+      <div className="grid grid-cols-4">
+        {MOBILE_TABS.map(([to, label, Icon]) => {
+          const on =
+            active === to ||
+            (to === "/vagas" && (active.startsWith("/vagas") || active.startsWith("/jobs"))) ||
+            (to === "/cv" && active.startsWith("/cv"));
+          return (
+            <Link
+              key={to}
+              to={to}
+              className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] ${
+                on ? "text-primary" : "text-muted"
+              }`}
+            >
+              <Icon className="size-4" />
+              {label}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
@@ -128,8 +151,8 @@ export function DashShell({
   active: string;
 }) {
   return (
-    <div className="mx-auto grid max-w-6xl gap-4 px-3 py-4 sm:px-4 md:grid-cols-[240px_1fr] md:gap-6 md:py-8">
-      <aside className="md:sticky md:top-20 md:self-start">
+    <div className="mx-auto grid max-w-5xl gap-8 px-4 py-6 md:grid-cols-[200px_1fr] md:py-10">
+      <aside className="md:sticky md:top-24 md:self-start">
         <DashNav profile={profile} active={active} />
       </aside>
       <div className="dash-page min-w-0">{children}</div>
@@ -150,10 +173,10 @@ export function DashPage({
 }) {
   return (
     <div>
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl">{title}</h1>
-          {subtitle ? <p className="mt-1 max-w-2xl text-sm text-muted">{subtitle}</p> : null}
+          <h1 className="text-3xl sm:text-4xl">{title}</h1>
+          {subtitle ? <p className="mt-2 max-w-xl text-sm text-muted">{subtitle}</p> : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </header>
@@ -172,10 +195,10 @@ export function EmptyPanel({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="dash-card px-6 py-12 text-center">
-      <p className="font-medium">{title}</p>
-      {hint ? <p className="mt-1 text-sm text-muted">{hint}</p> : null}
-      {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
+    <div className="border-t border-border py-12">
+      <p className="font-display text-xl font-bold">{title}</p>
+      {hint ? <p className="mt-2 text-sm text-muted">{hint}</p> : null}
+      {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );
 }
@@ -183,7 +206,7 @@ export function EmptyPanel({
 export function StatCard({
   value,
   label,
-  icon: Icon,
+  icon: _Icon,
   to,
 }: {
   value: number | string;
@@ -192,16 +215,16 @@ export function StatCard({
   to?: string;
 }) {
   const body = (
-    <div className="dash-card flex min-h-[92px] items-center gap-3 overflow-hidden p-3 sm:p-4 transition-transform duration-150 hover:-translate-y-0.5">
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary sm:size-11">
-        <Icon className="size-5" />
-      </span>
-      <div className="min-w-0">
-        <div className="text-xl font-semibold tabular-nums sm:text-2xl">{value}</div>
-        <div className="text-xs leading-tight text-muted sm:text-sm">{label}</div>
-      </div>
+    <div>
+      <div className="font-display text-3xl font-bold tabular-nums">{value}</div>
+      <div className="mt-1 text-sm text-muted">{label}</div>
     </div>
   );
-  return to ? <Link to={to}>{body}</Link> : body;
+  return to ? (
+    <Link to={to} className="block">
+      {body}
+    </Link>
+  ) : (
+    body
+  );
 }
-

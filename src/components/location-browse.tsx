@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, MapPin, Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -148,21 +148,20 @@ export function LocationBrowse({
 
   if (items == null) {
     return (
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="h-20 animate-pulse rounded-2xl bg-border/60" />
-        <div className="h-20 animate-pulse rounded-2xl bg-border/60" />
-        <div className="h-20 animate-pulse rounded-2xl bg-border/60" />
-        <div className="h-20 animate-pulse rounded-2xl bg-border/60" />
+      <div>
+        <div className="h-16 animate-pulse border-b border-border" />
+        <div className="h-16 animate-pulse border-b border-border" />
+        <div className="h-16 animate-pulse border-b border-border" />
       </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
-        <p className="font-medium">{emptyTitle}</p>
+      <div className="border-t border-border py-10">
+        <p className="font-display text-xl">{emptyTitle}</p>
         <p className="mt-1 text-sm text-muted">{emptyHint}</p>
-        <div className="mt-4 flex justify-center">
+        <div className="mt-4">
           <ActivateAlertButton countryId={countryId} regionId={regionId} />
         </div>
       </div>
@@ -190,13 +189,11 @@ export function LocationBrowse({
         </div>
       </div>
       {filtered.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-          Nenhuma localização corresponde a “{q}”.
-        </p>
+        <p className="border-t border-border py-8 text-sm text-muted">Nenhuma localização corresponde a “{q}”.</p>
       ) : (
-        <div className={compact ? "grid gap-2" : "grid gap-3 sm:grid-cols-2"}>
+        <div className={compact ? "" : "sm:columns-2 sm:gap-x-10"}>
           {filtered.map((item) => (
-            <LocationCard key={item.id} item={item} onPick={onPick} compact={compact} />
+            <LocationRow key={item.id} item={item} onPick={onPick} compact={compact} />
           ))}
         </div>
       )}
@@ -208,7 +205,7 @@ export function LocationBrowse({
               params={{ country: allParams.country }}
               search={{}}
               hash="todas"
-              className="inline-flex h-11 w-full items-center justify-center rounded-[10px] border border-border bg-surface px-4 text-sm font-medium hover:border-primary sm:w-auto"
+              className="inline-flex h-11 w-full items-center justify-center rounded-full border border-border bg-surface px-4 text-sm font-medium sm:w-auto"
             >
               {allLabel}
             </Link>
@@ -217,14 +214,14 @@ export function LocationBrowse({
               to="/vagas/$country/$region"
               params={{ country: allParams.country, region: allParams.region }}
               search={{}}
-              className="inline-flex h-11 w-full items-center justify-center rounded-[10px] border border-border bg-surface px-4 text-sm font-medium hover:border-primary sm:w-auto"
+              className="inline-flex h-11 w-full items-center justify-center rounded-full border border-border bg-surface px-4 text-sm font-medium sm:w-auto"
             >
               {allLabel}
             </Link>
           ) : (
             <Link
               to="/vagas"
-              className="inline-flex h-11 w-full items-center justify-center rounded-[10px] border border-border bg-surface px-4 text-sm font-medium hover:border-primary sm:w-auto"
+              className="inline-flex h-11 w-full items-center justify-center rounded-full border border-border bg-surface px-4 text-sm font-medium sm:w-auto"
             >
               {allLabel}
             </Link>
@@ -235,7 +232,7 @@ export function LocationBrowse({
   );
 }
 
-function LocationCard({
+function LocationRow({
   item,
   onPick,
   compact,
@@ -248,15 +245,12 @@ function LocationCard({
     <button
       type="button"
       onClick={() => onPick?.(item)}
-      className={`flex w-full items-center gap-3 rounded-2xl border border-border bg-surface text-left hover:border-primary hover:shadow-[0_8px_24px_rgba(20,34,28,0.06)] ${
-        compact ? "min-h-16 px-3 py-3" : "min-h-[4.5rem] px-4 py-4"
+      className={`flex w-full items-center justify-between gap-3 border-b border-border text-left ${
+        compact ? "min-h-14 py-3" : "min-h-16 py-4"
       }`}
     >
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
-        <MapPin className="size-4" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-semibold">{item.name}</span>
+      <span className="min-w-0">
+        <span className="block truncate font-display text-lg">{item.name}</span>
         <span className="text-sm text-muted">{jobCountLabel(item.count)}</span>
       </span>
       <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />

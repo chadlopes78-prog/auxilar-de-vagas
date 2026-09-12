@@ -29,7 +29,7 @@ import { cityLabel, countryFlag, regionLabel } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/cv")({
-  head: () => ({ meta: [{ title: "O meu CV | Auxilar de Vagas" }] }),
+  head: () => ({ meta: [{ title: "O meu CV | Auxiliar de Vagas" }] }),
   component: CV,
 });
 
@@ -358,7 +358,7 @@ function CV() {
         <Card title="CV principal e adicionais">
           <div className="space-y-2">
             {bundle?.documents.map((d) => (
-              <div key={d.id} className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+              <div key={d.id} className="flex items-center justify-between gap-2 border-b border-border py-3 text-sm">
                 <span>
                   {d.fileName} {d.isPrimary ? "· principal" : ""}
                 </span>
@@ -404,8 +404,8 @@ function CV() {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="dash-card mt-6 space-y-3 p-5">
-      <h2 className="text-xl">{title}</h2>
+    <div className="section-block space-y-3">
+      <h2 className="text-2xl">{title}</h2>
       {children}
     </div>
   );
@@ -422,7 +422,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Line({ title, sub, onRemove }: { title: string; sub?: string | null; onRemove: () => void }) {
   return (
-    <div className="flex items-start justify-between gap-3 rounded-lg border border-border px-3 py-2">
+    <div className="flex items-start justify-between gap-3 border-b border-border py-3">
       <div>
         <div className="text-sm font-medium">{title}</div>
         {sub ? <div className="text-xs text-muted">{sub}</div> : null}

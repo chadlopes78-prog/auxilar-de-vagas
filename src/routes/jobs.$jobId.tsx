@@ -8,13 +8,14 @@ import { ApplyMethodBadge } from "@/components/apply-method-badge";
 import { getJob } from "@/lib/server/jobs";
 import { toggleSaveJob } from "@/lib/server/account";
 import type { JobDetail } from "@/lib/types";
-import { initials, isNew, labelOf, money, timeAgo, EMPLOYMENT, EXPERIENCE, WORK_MODELS } from "@/lib/utils";
+import { isNew, labelOf, money, timeAgo, EMPLOYMENT, EXPERIENCE, WORK_MODELS } from "@/lib/utils";
 import { useCurrentUser, useCurrentUserState } from "@/lib/auth/use-current-user";
 import { toast } from "sonner";
+import { APP_NAME, pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/jobs/$jobId")({
   head: () => ({
-    meta: [{ title: "Vaga | Auxilar de Vagas" }],
+    meta: [{ title: pageTitle("Vaga") }],
   }),
   validateSearch: (s: Record<string, unknown>): { apply?: string } => {
     if (s.apply === "1" || s.apply === true) return { apply: "1" };
@@ -49,8 +50,8 @@ function JobDetailPage() {
   if (job === undefined) {
     return (
       <Shell>
-        <div className="mx-auto max-w-6xl px-4 py-10">
-          <div className="h-40 animate-pulse rounded-xl bg-border/60" />
+        <div className="mx-auto max-w-5xl px-4 py-10">
+          <div className="h-40 animate-pulse border-b border-border" />
         </div>
       </Shell>
     );
@@ -58,7 +59,7 @@ function JobDetailPage() {
   if (!job) {
     return (
       <Shell>
-        <div className="mx-auto max-w-6xl px-4 py-16">Vaga não encontrada.</div>
+        <div className="mx-auto max-w-5xl px-4 py-16">Vaga não encontrada.</div>
       </Shell>
     );
   }
@@ -89,19 +90,12 @@ function JobDetailPage() {
 
   return (
     <Shell>
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 md:grid-cols-[1fr_300px]">
+      <div className="mx-auto grid max-w-5xl gap-10 px-4 py-8 md:grid-cols-[1fr_240px]">
         <article>
-          <div className="mb-3 flex flex-wrap gap-1.5">
-            {isNew(job.publishedAt) ? <Chip color="green">NOVA</Chip> : null}
-            {job.urgent ? <Chip color="red">URGENTE</Chip> : null}
-            {job.featured ? <Chip>DESTAQUE</Chip> : null}
-            {job.workModel === "remote" ? <Chip color="blue">REMOTO</Chip> : null}
-            <ApplyMethodBadge channel={job.applyChannel} />
-          </div>
-          <h1 className="text-3xl md:text-4xl">{job.title}</h1>
-          <p className="mt-2 text-muted">
-            {job.companyName} · {[job.city, job.region, job.country].filter(Boolean).join(", ")} ·{" "}
-            {timeAgo(job.publishedAt)}
+          <p className="text-xs uppercase tracking-[0.14em] text-muted">{job.companyName}</p>
+          <h1 className="mt-2 text-3xl md:text-4xl">{job.title}</h1>
+          <p className="mt-3 text-muted">
+            {[job.city, job.region, job.country].filter(Boolean).join(", ")} · {timeAgo(job.publishedAt)}
           </p>
           <p className="mt-3 text-sm">
             {labelOf(EMPLOYMENT, job.employmentType)} · {labelOf(WORK_MODELS, job.workModel)} ·{" "}
@@ -110,8 +104,15 @@ function JobDetailPage() {
               ? ` · ${money(job.salaryMin, job.salaryCurrency)} – ${money(job.salaryMax, job.salaryCurrency)}`
               : " · Salário não indicado"}
           </p>
-          <p className="text-sm text-muted">Prazo de candidatura: {job.deadline ?? "Aberto"}</p>
-          <p className="mt-2 text-sm">Fonte: {job.sourceName}</p>
+          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+            {isNew(job.publishedAt) ? <span className="text-primary">Nova</span> : null}
+            {job.urgent ? <span className="text-danger">Urgente</span> : null}
+            {job.featured ? <span>Destaque</span> : null}
+            {job.workModel === "remote" ? <span>Remoto</span> : null}
+            <ApplyMethodBadge channel={job.applyChannel} />
+          </div>
+          <p className="mt-4 text-sm text-muted">Prazo de candidatura: {job.deadline ?? "Aberto"}</p>
+          <p className="mt-1 text-sm text-muted">Fonte: {job.sourceName}</p>
           {job.applyEmail ? (
             <p className="mt-2 text-sm">
               E-mail oficial da empresa:{" "}
@@ -127,12 +128,9 @@ function JobDetailPage() {
           <Section title="Benefícios">{job.benefits}</Section>
           <Section title="Sobre a empresa">{job.companyDescription}</Section>
         </article>
-        <aside className="h-fit rounded-xl border border-border bg-surface p-5 md:sticky md:top-24">
-          <div className="mb-3 grid size-12 place-items-center rounded-xl bg-primary-soft font-semibold text-primary">
-            {initials(job.companyName)}
-          </div>
-          <div className="font-semibold">{job.companyName}</div>
-          <p className="text-sm text-muted">{job.companyIndustry}</p>
+        <aside className="h-fit border-t border-border pt-5 md:sticky md:top-24 md:border-t-0 md:border-l md:pl-6 md:pt-0">
+          <div className="font-display text-xl">{job.companyName}</div>
+          <p className="mt-1 text-sm text-muted">{job.companyIndustry}</p>
           <p className="mt-3 text-xs text-muted">
             {job.applyEmail
               ? `A candidatura é enviada para o e-mail oficial ${job.applyEmail}.`
@@ -140,9 +138,9 @@ function JobDetailPage() {
                 ? "Prepara a candidatura aqui. O envio final é no portal oficial."
                 : job.applyChannel === "official_api"
                   ? "Candidatura rápida disponível para esta vaga."
-                  : "Candidatura enviada directamente no Auxilar de Vagas."}
+                  : `Candidatura enviada directamente no ${APP_NAME}.`}
           </p>
-          <div className="mt-4 space-y-2">
+          <div className="mt-5 hidden space-y-2 md:block">
             {applyBtn}
             <Button variant="outline" className="w-full" onClick={() => void save()}>
               <Bookmark className="size-4" /> Guardar vaga
@@ -160,7 +158,14 @@ function JobDetailPage() {
           </div>
         </aside>
       </div>
-      <div className="sticky bottom-0 border-t border-border bg-surface p-3 md:hidden">{applyBtn}</div>
+      <div className="fixed inset-x-0 z-30 border-t border-border bg-bg p-3 md:hidden bottom-[calc(3.5rem+env(safe-area-inset-bottom))]">
+        <div className="flex gap-2">
+          <Button variant="outline" className="shrink-0" onClick={() => void save()} aria-label="Guardar vaga">
+            <Bookmark className="size-4" />
+          </Button>
+          {applyBtn}
+        </div>
+      </div>
 
       {gate ? (
         <Modal onClose={() => setGate(false)}>
@@ -193,23 +198,11 @@ function JobDetailPage() {
 
 function Section({ title, children }: { title: string; children?: string | null }) {
   return (
-    <section className="mt-8">
+    <section className="mt-10 border-t border-border pt-6">
       <h2 className="text-xl">{title}</h2>
       <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-fg/90">{children || "—"}</p>
     </section>
   );
-}
-
-function Chip({ children, color }: { children: string; color?: string }) {
-  const cls =
-    color === "green"
-      ? "bg-primary-soft text-primary"
-      : color === "red"
-        ? "bg-[#fde8e6] text-danger"
-        : color === "blue"
-          ? "bg-[#e8eefc] text-info"
-          : "bg-bg text-fg";
-  return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide ${cls}`}>{children}</span>;
 }
 
 function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {

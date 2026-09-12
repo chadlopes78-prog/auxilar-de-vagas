@@ -26,7 +26,7 @@ function CompanyForm() {
     <Shell>
       <DashShell profile={profile} active="/employer/company">
         <DashPage title="Perfil da empresa">
-        <div className="mt-4 space-y-3 dash-card p-5">
+        <div className="mt-4 space-y-3 border-t border-border pt-6">
           <div>
             <Label>Nome da empresa</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />

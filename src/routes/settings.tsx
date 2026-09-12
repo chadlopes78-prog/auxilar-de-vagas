@@ -12,7 +12,7 @@ import { isOwnerAdminEmail } from "@/lib/brand";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "Definições | Auxilar de Vagas" }] }),
+  head: () => ({ meta: [{ title: "Definições | Auxiliar de Vagas" }] }),
   component: Settings,
 });
 
@@ -25,7 +25,7 @@ function Settings() {
     <Shell>
       <DashShell profile={profile} active="/settings">
         <DashPage title="Definições" subtitle={`Sessão iniciada como ${user.primaryEmail} (${ROLE_PT[profile?.role ?? ""] ?? profile?.role}).`}>
-        <div className="dash-card p-5">
+        <div className="border-t border-border pt-6">
           <p className="text-sm text-muted">Gerir a sua sessão nesta plataforma.</p>
           <div className="mt-4 flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => signOut()}>

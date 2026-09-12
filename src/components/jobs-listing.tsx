@@ -287,7 +287,7 @@ export function JobsListing({
   const cities = usePlacesWithJobs(null, filterRegionId, Boolean(filterRegionId));
 
   const filters = (
-    <aside className="space-y-4 rounded-xl border border-border bg-surface p-4">
+    <aside className="space-y-4 md:border-r md:border-border md:pr-6">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">Localização</h3>
       {lockedCountryId ? null : (
         <div>
@@ -459,21 +459,21 @@ export function JobsListing({
             {result.remoteCount} remotas
           </p>
         ) : null}
-        <div className="space-y-3">
+        <div>
           {result == null ? (
             <>
               <JobSkeleton />
               <JobSkeleton />
             </>
           ) : result.jobs.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center">
+            <div className="border-t border-border py-10">
               <h3 className="text-xl">Ainda não há vagas nesta localização.</h3>
               <p className="mt-1 text-sm text-muted">
                 {search.q
                   ? `Não encontrámos “${search.q}” aqui. Não mostramos vagas inventadas — as oportunidades entram quando empresas publicam ou quando uma fonte autorizada é sincronizada.`
                   : "Não mostramos vagas inventadas. As oportunidades entram quando empresas publicam aqui ou quando uma fonte autorizada é sincronizada."}
               </p>
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {cityId ? (
                   <Button variant="outline" onClick={() => navigate({ to: path, search: { ...search, city: "" } } as never)}>
                     Pesquisar em {regionName ?? "toda a região"} ({result.regionCount})
@@ -567,8 +567,8 @@ function SourceStrip({
       <div className="mt-2 flex flex-wrap gap-1.5">
         <button
           type="button"
-          className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-            !selected ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface text-muted"
+          className={`rounded-full px-2.5 py-1 text-[11px] ${
+            !selected ? "bg-surface text-fg shadow-sm ring-1 ring-border" : "text-muted"
           }`}
           onClick={() => onSelect("")}
         >
@@ -584,12 +584,12 @@ function SourceStrip({
               type="button"
               disabled={pending}
               title={pending ? "Integração pendente — não inventamos vagas desta fonte." : s.name}
-              className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+              className={`rounded-full px-2.5 py-1 text-[11px] ${
                 active
-                  ? "border-primary bg-primary-soft text-primary"
+                  ? "bg-surface text-fg shadow-sm ring-1 ring-border"
                   : pending
-                    ? "cursor-default border-border bg-bg text-muted"
-                    : "border-border bg-surface text-fg"
+                    ? "cursor-default text-muted"
+                    : "text-muted hover:text-fg"
               }`}
               onClick={() => {
                 if (!pending) onSelect(s.slug === selected ? "" : s.slug);

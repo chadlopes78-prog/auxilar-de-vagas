@@ -12,7 +12,7 @@ import { isOwnerAdminEmail } from "@/lib/brand";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/")({
-  head: () => ({ meta: [{ title: "Administração | Auxilar de Vagas" }] }),
+  head: () => ({ meta: [{ title: "Administração | Auxiliar de Vagas" }] }),
   component: Admin,
 });
 
@@ -81,7 +81,7 @@ function Admin() {
       <DashShell profile={profile} active="/admin">
         <DashPage title="Administração" subtitle="Visão geral da plataforma e gestão de vagas.">
         {stats ? (
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-6 border-b border-border pb-8 md:grid-cols-3">
             <StatCard value={stats.users} label="Utilizadores" icon={Users} to="/admin/users" />
             <StatCard value={stats.candidates} label="Candidatos" icon={Users} />
             <StatCard value={stats.companies} label="Empresas" icon={Building2} to="/admin/companies" />
@@ -96,7 +96,7 @@ function Admin() {
             <p className="text-sm text-muted">Ainda não há vagas na base de dados.</p>
           ) : (
             jobs.map((j) => (
-              <div key={j.id} className="dash-card flex flex-wrap items-center justify-between gap-2 p-4">
+              <div key={j.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-4">
                 <div>
                   <div className="font-medium">{j.title}</div>
                   <div className="text-xs text-muted">

@@ -31,7 +31,7 @@ function Cos() {
             <p className="text-sm text-muted">Ainda não há empresas registadas.</p>
           ) : (
             rows.map((c) => (
-              <div key={c.id} className="flex items-center justify-between dash-card p-3">
+              <div key={c.id} className="flex items-center justify-between border-b border-border py-4">
                 <div>
                   {c.name} · {c.approved ? "aprovada" : "pendente"}
                 </div>

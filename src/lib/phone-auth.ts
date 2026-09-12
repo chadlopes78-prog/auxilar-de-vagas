@@ -1,14 +1,14 @@
 export const PHONE_EMAIL_DOMAIN = "phone.auxilar.app";
 
 export const COUNTRY_DIALS = [
-  { code: "MZ", dial: "258", label: "Moçambique" },
-  { code: "AO", dial: "244", label: "Angola" },
-  { code: "PT", dial: "351", label: "Portugal" },
-  { code: "ZA", dial: "27", label: "África do Sul" },
-  { code: "BR", dial: "55", label: "Brasil" },
-  { code: "ZW", dial: "263", label: "Zimbabwe" },
-  { code: "MW", dial: "265", label: "Malawi" },
-  { code: "TZ", dial: "255", label: "Tanzânia" },
+  { code: "MZ", dial: "258", label: "Moçambique", flag: "🇲🇿" },
+  { code: "AO", dial: "244", label: "Angola", flag: "🇦🇴" },
+  { code: "PT", dial: "351", label: "Portugal", flag: "🇵🇹" },
+  { code: "ZA", dial: "27", label: "África do Sul", flag: "🇿🇦" },
+  { code: "BR", dial: "55", label: "Brasil", flag: "🇧🇷" },
+  { code: "ZW", dial: "263", label: "Zimbabwe", flag: "🇿🇼" },
+  { code: "MW", dial: "265", label: "Malawi", flag: "🇲🇼" },
+  { code: "TZ", dial: "255", label: "Tanzânia", flag: "🇹🇿" },
 ] as const;
 
 export function onlyDigits(value: string) {

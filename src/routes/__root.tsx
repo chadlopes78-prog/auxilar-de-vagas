@@ -30,7 +30,7 @@ function AppFrame() {
           <Outlet />
         </RequireAuth>
       )}
-      <SupportFloatButton />
+      {pathname !== "/" ? <SupportFloatButton /> : null}
       <Toaster position="bottom-left" />
     </AuthProvider>
   );
@@ -46,7 +46,7 @@ export const Route = createRootRoute({
         name: "description",
         content: "Pesquise vagas em Moçambique, Angola e Portugal num só lugar.",
       },
-      { name: "theme-color", content: "#0F6E4C" },
+      { name: "theme-color", content: "#1F5C45" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -56,12 +56,12 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap",
       },
     ],
   }),
   component: () => (
-    <html lang="pt" suppressHydrationWarning>
+    <html lang="pt" className="antialiased" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

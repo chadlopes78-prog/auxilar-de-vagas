@@ -5,7 +5,7 @@ import { useGeo } from "@/hooks/use-geo";
 export const Route = createFileRoute("/categories")({
   head: () => ({
     meta: [
-      { title: "Categorias | Auxilar de Vagas" },
+      { title: "Categorias | Auxiliar de Vagas" },
       { name: "description", content: "Explore vagas por categoria em Moçambique, Angola e Portugal." },
     ],
   }),

@@ -15,7 +15,7 @@ import { STATUS_PT } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/employer/")({
-  head: () => ({ meta: [{ title: "Painel do empregador | Auxilar de Vagas" }] }),
+  head: () => ({ meta: [{ title: "Painel do empregador | Auxiliar de Vagas" }] }),
   component: Employer,
 });
 
@@ -39,18 +39,18 @@ function Employer() {
     <Shell>
       <DashShell profile={profile} active="/employer">
         <DashPage title="Visão geral do empregador" subtitle="Acompanhe vagas publicadas e candidaturas recebidas.">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-6 border-b border-border pb-8 md:grid-cols-3">
           <StatCard value={jobs} label="Vagas" icon={Briefcase} to="/employer/jobs" />
           <StatCard value={apps.length} label="Candidaturas" icon={FileText} to="/employer/applications" />
           <StatCard value={profile?.companyId ? "Activa" : "—"} label="Empresa" icon={Building2} to="/employer/company" />
         </div>
         <h2 className="mt-8 text-xl">Candidatos recentes</h2>
-        <div className="mt-3 space-y-2">
+        <div className="mt-3">
           {apps.length === 0 ? (
             <EmptyPanel title="Ainda não há candidaturas." hint="Quando alguém se candidatar, o estado aparece aqui." />
           ) : (
             apps.map((a) => (
-              <div key={a.id} className="dash-card flex flex-wrap items-center justify-between gap-2 p-4">
+              <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-4">
                 <div>
                   <div className="font-medium">{a.candidateName}</div>
                   <div className="text-sm text-muted">

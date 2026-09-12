@@ -428,7 +428,7 @@ function SentDone({
         href={supportUrl(applyHelpText(title, company))}
         target="_blank"
         rel="noreferrer"
-        className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-whatsapp px-4 text-sm font-medium text-whatsapp-fg"
+        className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-whatsapp px-4 text-sm font-medium text-whatsapp-fg"
       >
         <WhatsAppIcon className="size-5" />
         Contacte-nos no WhatsApp para mais auxílio ao seu processo
@@ -550,7 +550,7 @@ function CvStep({
       ) : null}
       {!useSaved || ctx.documents.length === 0 ? (
         <div>
-          <label className="inline-flex h-11 cursor-pointer items-center justify-center rounded-[10px] bg-primary px-4 text-sm font-medium text-primary-fg hover:bg-[#0c5c3f]">
+          <label className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-primary px-4 text-sm font-medium text-primary-fg hover:bg-primary-hover">
             Selecionar CV
             <input
               type="file"
@@ -569,7 +569,7 @@ function CvStep({
           href={supportUrl(WA_CV_TEXT)}
           target="_blank"
           rel="noreferrer"
-          className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-[#25D366] text-sm font-medium text-white hover:bg-[#1ebe5d]"
+          className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-whatsapp text-sm font-medium text-whatsapp-fg"
         >
           <WhatsAppIcon className="size-5" />
           Falar connosco

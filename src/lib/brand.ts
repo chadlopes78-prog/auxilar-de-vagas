@@ -1,4 +1,4 @@
-export const APP_NAME = "Auxilar de Vagas";
+export const APP_NAME = "Auxiliar de Vagas";
 export const APP_MARK = "AV";
 export const APP_TAGLINE = "Encontre oportunidades de emprego perto de si";
 export const OWNER_ADMIN_EMAIL = "chadlopesff@gmail.com";

@@ -3,12 +3,11 @@ import { useEffect, useState } from "react";
 import { Shell } from "@/components/site-header";
 import { listCompanies } from "@/lib/server/jobs";
 import type { CompanyCard } from "@/lib/types";
-import { initials } from "@/lib/utils";
 
 export const Route = createFileRoute("/companies/")({
   head: () => ({
     meta: [
-      { title: "Empresas | Auxilar de Vagas" },
+      { title: "Empresas | Auxiliar de Vagas" },
       { name: "description", content: "Empresas que publicam vagas em Moçambique, Angola e Portugal." },
     ],
   }),
@@ -26,14 +25,14 @@ function Companies() {
     <Shell>
       <div className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="text-3xl">Empresas</h1>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-6">
           {rows == null
             ? Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-36 animate-pulse rounded-xl bg-border/60" />
+                <div key={i} className="h-16 animate-pulse border-b border-border" />
               ))
             : rows.length === 0
               ? (
-                <p className="col-span-full rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">
+                <p className="border-t border-border py-10 text-sm text-muted">
                   Ainda não há empresas com vagas publicadas. As empresas entram quando publicam
                   directamente ou quando uma fonte autorizada é sincronizada.
                 </p>
@@ -43,18 +42,17 @@ function Companies() {
                   key={c.id}
                   to="/companies/$companyId"
                   params={{ companyId: String(c.id) }}
-                  className="rounded-xl border border-border bg-surface p-5 hover:shadow-[0_8px_24px_rgba(20,34,28,0.06)]"
+                  className="flex items-baseline justify-between gap-3 border-b border-border py-4"
                 >
-                  <div className="grid size-12 place-items-center rounded-xl bg-primary-soft font-semibold text-primary">
-                    {initials(c.name)}
-                  </div>
-                  <div className="mt-3 font-semibold">{c.name}</div>
-                  <div className="text-sm text-muted">
-                    {c.industry} · {[c.city, c.country].filter(Boolean).join(", ")}
-                  </div>
-                  <div className="mt-2 text-sm">
-                    {c.jobCount} {c.jobCount === 1 ? "vaga activa" : "vagas activas"}
-                  </div>
+                  <span className="min-w-0">
+                    <span className="block font-display text-lg">{c.name}</span>
+                    <span className="text-sm text-muted">
+                      {c.industry} · {[c.city, c.country].filter(Boolean).join(", ")}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-sm text-muted">
+                    {c.jobCount} {c.jobCount === 1 ? "vaga" : "vagas"}
+                  </span>
                 </Link>
               ))}
         </div>

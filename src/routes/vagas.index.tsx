@@ -10,7 +10,7 @@ export const Route = createFileRoute("/vagas/")({
   validateSearch: parseJobSearch,
   head: () => ({
     meta: [
-      { title: "Procurar vagas | Auxilar de Vagas" },
+      { title: "Procurar vagas | Auxiliar de Vagas" },
       {
         name: "description",
         content: "Pesquise vagas de emprego em Moçambique, Angola e Portugal num só lugar.",

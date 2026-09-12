@@ -18,14 +18,14 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/sources")({
-  head: () => ({ meta: [{ title: "Fontes de vagas | Auxilar de Vagas" }] }),
+  head: () => ({ meta: [{ title: "Fontes de vagas | Auxiliar de Vagas" }] }),
   component: Sources,
 });
 
 function statusClass(status: string) {
   if (status === "active") return "bg-primary-soft text-primary";
-  if (status === "error") return "bg-[#fde8e6] text-danger";
-  if (status === "pending") return "bg-[#eef2f6] text-fg";
+  if (status === "error") return "bg-danger-soft text-danger";
+  if (status === "pending") return "bg-bg text-muted";
   return "bg-bg text-muted";
 }
 

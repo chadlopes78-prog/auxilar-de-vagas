@@ -13,7 +13,7 @@ import type { JobAlertRow } from "@/lib/types";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/alerts")({
-  head: () => ({ meta: [{ title: "Alertas de vagas | Auxilar de Vagas" }] }),
+  head: () => ({ meta: [{ title: "Alertas de vagas | Auxiliar de Vagas" }] }),
   component: Alerts,
 });
 
@@ -40,7 +40,7 @@ function Alerts() {
     <Shell>
       <DashShell profile={profile} active="/alerts">
         <DashPage title="Alertas de vagas" subtitle="Receba avisos quando surgirem oportunidades na sua localização.">
-        <div className="dash-card space-y-3 p-5">
+        <div className="space-y-3 border-t border-border pt-6">
           <div>
             <Label>Palavra-chave</Label>
             <Input placeholder="Contabilista" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
@@ -74,7 +74,7 @@ function Alerts() {
         </div>
         <div className="mt-4 space-y-2">
           {rows.map((a) => (
-            <div key={a.id} className="dash-card p-4 text-sm">
+            <div key={a.id} className="border-b border-border py-4 text-sm">
               {a.keyword || "Qualquer cargo"} ·{" "}
               {a.cityName ?? a.regionName ?? a.countryName ?? "Qualquer localização"} ·{" "}
               {a.frequency === "daily" ? "Diário" : "Semanal"}

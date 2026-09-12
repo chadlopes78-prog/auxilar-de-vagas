@@ -22,7 +22,7 @@ export const Route = createFileRoute("/vagas/$country/$region/$city")({
     const city = titleCaseSlug(params.city);
     return {
       meta: [
-        { title: `Vagas em ${city}, ${region} | Auxilar de Vagas` },
+        { title: `Vagas em ${city}, ${region} | Auxiliar de Vagas` },
         {
           name: "description",
           content: `Vagas de emprego em ${city}, ${region}, ${country}.`,

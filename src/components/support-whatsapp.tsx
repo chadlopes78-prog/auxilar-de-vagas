@@ -25,7 +25,7 @@ export function SupportHeaderButton({ compact }: { compact?: boolean }) {
       href={supportUrl()}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex min-h-11 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-3 text-sm font-medium text-fg transition-colors hover:bg-bg"
+      className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-sm font-medium text-fg transition-colors hover:bg-bg"
       aria-label="Suporte no WhatsApp"
     >
       <WhatsAppIcon className="size-4 text-whatsapp" />
@@ -54,7 +54,7 @@ export function SupportFloatButton() {
       href={supportUrl()}
       target="_blank"
       rel="noreferrer"
-      className="wa-pulse fixed z-50 grid size-14 place-items-center rounded-full bg-whatsapp text-whatsapp-fg shadow-[0_12px_28px_-8px_rgb(37_211_102_/_0.55)] transition-transform duration-150 hover:brightness-105 active:scale-[0.96] bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))]"
+      className="wa-pulse fixed z-50 grid size-14 place-items-center rounded-full bg-whatsapp text-whatsapp-fg shadow-[0_8px_20px_-8px_rgb(37_211_102_/_0.45)] transition-transform duration-150 hover:brightness-105 active:scale-[0.96] bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] md:bottom-[max(1.25rem,env(safe-area-inset-bottom))]"
       aria-label="Falar com o suporte no WhatsApp"
     >
       <WhatsAppIcon className="size-7" />

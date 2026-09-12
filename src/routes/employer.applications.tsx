@@ -35,7 +35,7 @@ function EmpApps() {
             <p className="text-sm text-muted">Ainda não há candidaturas.</p>
           ) : (
             apps.map((a) => (
-              <div key={a.id} className="dash-card p-4">
+              <div key={a.id} className="border-b border-border py-4">
                 <div className="font-medium">{a.candidateName}</div>
                 <div className="text-sm text-muted">
                   {a.jobTitle} · {a.phone} · {a.candidateEmail}
