@@ -1,15 +1,21 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { authEnabled } from "@/lib/auth/client";
 import { createEmailAccount, signInEmailAccount } from "@/lib/auth/email-signup";
+import { ensureProfile } from "@/lib/server/account";
 import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/input";
+import { Input, Label, Select } from "@/components/ui/input";
 import { GuestOnly } from "@/components/require-auth";
 import { APP_NAME } from "@/lib/brand";
 import { BrandMark } from "@/components/brand-mark";
 import { toast } from "sonner";
 import { SUPPORT_LOGIN_TEXT, supportUrl, WhatsAppIcon } from "@/components/support-whatsapp";
 import { authErrorMessage } from "@/lib/auth-errors";
+import {
+  COUNTRY_DIALS,
+  identifierToAuthEmail,
+  phoneToAuthEmail,
+  toE164,
+} from "@/lib/phone-auth";
 
 export function AuthFrame({ children }: { children: ReactNode }) {
   return (
@@ -24,10 +30,10 @@ export function AuthFrame({ children }: { children: ReactNode }) {
         <span className="auth-dot" />
         <span className="auth-dot" />
         <div className="auth-glow" aria-hidden />
-        <div className="auth-enter relative z-10 mb-6 flex items-center gap-2">
-          <BrandMark className="size-10 rounded-xl" />
+        <Link to="/" className="auth-enter relative z-10 mb-6 flex items-center gap-2">
+          <BrandMark className="size-10 rounded-xl" decorative />
           <span className="text-lg font-semibold tracking-tight">{APP_NAME}</span>
-        </div>
+        </Link>
         {children}
         <a
           href={supportUrl(SUPPORT_LOGIN_TEXT)}
@@ -66,77 +72,57 @@ function ModeTabs({ mode }: { mode: "login" | "register" }) {
   );
 }
 
-function GoogleMark() {
+function SignupKindTabs({
+  kind,
+  onChange,
+}: {
+  kind: "email" | "phone";
+  onChange: (k: "email" | "phone") => void;
+}) {
   return (
-    <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
-      <path
-        fill="#4285F4"
-        d="M23.49 12.27c0-.82-.07-1.64-.23-2.43H12v4.6h6.46a5.52 5.52 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.55-5.17 3.55-8.8Z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 24c3.24 0 5.97-1.07 7.96-2.93l-3.88-3c-1.08.73-2.47 1.16-4.08 1.16-3.14 0-5.8-2.12-6.75-4.97H1.24v3.09A12 12 0 0 0 12 24Z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.25 14.26A7.2 7.2 0 0 1 4.87 12c0-.79.14-1.55.38-2.26V6.65H1.24A12 12 0 0 0 0 12c0 1.94.46 3.77 1.24 5.35l4.01-3.09Z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 4.75c1.76 0 3.33.6 4.57 1.78l3.43-3.43C17.96 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.24 6.65l4.01 3.09C6.2 6.87 8.86 4.75 12 4.75Z"
-      />
-    </svg>
-  );
-}
-
-function SocialButtons({ callbackURL: _callbackURL }: { callbackURL: string }) {
-  const [error, setError] = useState("");
-  if (!authEnabled) {
-    return <p className="text-sm text-muted">O início de sessão está desactivado.</p>;
-  }
-
-  function start() {
-    const message =
-      "O login com Google ainda não está activo neste site. Crie conta com email e palavra-passe.";
-    setError(message);
-    toast.error(message);
-  }
-
-  return (
-    <div className="space-y-2">
-      <Button
+    <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-bg p-1">
+      <button
         type="button"
-        variant="outline"
-        className="w-full gap-2 bg-white text-neutral-800 hover:bg-neutral-50"
-        onClick={start}
+        onClick={() => onChange("email")}
+        className={`grid h-10 place-items-center rounded-[10px] text-sm font-medium ${
+          kind === "email" ? "bg-surface text-fg shadow-sm" : "text-muted"
+        }`}
       >
-        <GoogleMark />
-        Continuar com Google
-      </Button>
-      {error ? (
-        <p className="text-sm text-danger" role="alert">
-          {error}
-        </p>
-      ) : null}
+        Com e-mail
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("phone")}
+        className={`grid h-10 place-items-center rounded-[10px] text-sm font-medium ${
+          kind === "phone" ? "bg-surface text-fg shadow-sm" : "text-muted"
+        }`}
+      >
+        Com telefone
+      </button>
     </div>
   );
 }
 
 export function LoginForm() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function onEmail(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    const email = identifierToAuthEmail(identifier);
+    if (!email) {
+      setError("Escreva o e-mail ou o número de telefone.");
+      return;
+    }
     setBusy(true);
     try {
       await signInEmailAccount({ email, password });
       window.location.assign("/dashboard");
     } catch (err) {
-      const message = authErrorMessage(err, "Email ou palavra-passe incorrectos.");
+      const message = authErrorMessage(err, "Dados incorrectos. Verifique e tente novamente.");
       setError(message);
       toast.error(message);
       setBusy(false);
@@ -148,18 +134,17 @@ export function LoginForm() {
       <div className="auth-card auth-enter auth-enter-2 w-full max-w-[420px] p-5 sm:p-8">
         <ModeTabs mode="login" />
         <h1 className="text-2xl text-fg sm:text-3xl">Bem-vindo de volta</h1>
-        <p className="mt-1 text-sm text-muted">Entre na sua conta para continuar.</p>
-        <form className="mt-6 space-y-3" onSubmit={(e) => void onEmail(e)}>
+        <p className="mt-1 text-sm text-muted">Entre com e-mail ou número de telefone.</p>
+        <form className="mt-6 space-y-3" onSubmit={(e) => void onSubmit(e)}>
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="identifier">E-mail ou número de telefone</Label>
             <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="identifier"
+              autoComplete="username"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
-              placeholder="nome@email.com"
+              placeholder="nome@email.com ou 84 123 4567"
             />
           </div>
           <div>
@@ -180,20 +165,18 @@ export function LoginForm() {
             </p>
           ) : null}
           <Button className="btn-shine w-full" size="lg" disabled={busy}>
-            {busy ? "A entrar…" : "Entrar na minha conta"}
+            {busy ? "A entrar…" : "Entrar"}
           </Button>
         </form>
         <p className="mt-3 text-sm">
           <Link to="/forgot-password" className="font-medium text-primary hover:underline">
-            Esqueceu a palavra-passe?
+            Esqueceste a palavra-passe?
           </Link>
         </p>
-        <div className="my-5 h-px bg-border" />
-        <SocialButtons callbackURL="/dashboard" />
         <p className="mt-5 text-center text-sm text-muted">
-          Ainda não tem uma conta?{" "}
+          Ainda não tem conta?{" "}
           <Link to="/register" className="font-medium text-primary hover:underline">
-            Criar conta
+            Criar uma conta
           </Link>
         </p>
       </div>
@@ -202,8 +185,11 @@ export function LoginForm() {
 }
 
 export function RegisterForm() {
+  const [kind, setKind] = useState<"email" | "phone">("email");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [dial, setDial] = useState("258");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -213,7 +199,6 @@ export function RegisterForm() {
     e.preventDefault();
     setError("");
     const name = fullName.trim();
-    const mail = email.trim().toLowerCase();
     if (!name) {
       setError("Escreva o seu nome.");
       return;
@@ -226,16 +211,30 @@ export function RegisterForm() {
       setError("As palavras-passe não coincidem.");
       return;
     }
+    let authEmail = email.trim().toLowerCase();
+    let e164: string | null = null;
+    if (kind === "phone") {
+      if (phone.replace(/\D/g, "").length < 7) {
+        setError("Escreva um número de telefone válido.");
+        return;
+      }
+      e164 = toE164(dial, phone);
+      authEmail = phoneToAuthEmail(dial, phone);
+    } else if (!authEmail.includes("@")) {
+      setError("Escreva um e-mail válido.");
+      return;
+    }
     setBusy(true);
     try {
       const result = await createEmailAccount({
-        email: mail,
+        email: authEmail,
         password,
         name,
       });
-      toast.success(
-        result.created ? "Conta criada com sucesso." : "Já tinha conta. Sessão iniciada.",
-      );
+      await ensureProfile({
+        data: { email: kind === "email" ? authEmail : e164, name, phone: e164 },
+      }).catch(() => null);
+      toast.success(result.created ? "Conta criada com sucesso." : "Já tinha conta. Sessão iniciada.");
       window.location.assign("/dashboard");
     } catch (err) {
       const message = authErrorMessage(err, "Não foi possível criar a conta.");
@@ -249,9 +248,10 @@ export function RegisterForm() {
     <AuthFrame>
       <div className="auth-card auth-enter auth-enter-2 w-full max-w-[420px] p-5 sm:p-8">
         <ModeTabs mode="register" />
-        <h1 className="text-2xl text-fg sm:text-3xl">Criar a sua conta</h1>
-        <p className="mt-1 text-sm text-muted">Preencha os dados uma vez. Depois acede ao painel.</p>
+        <h1 className="text-2xl text-fg sm:text-3xl">Criar conta</h1>
+        <p className="mt-1 text-sm text-muted">Use e-mail ou número de telefone.</p>
         <form className="mt-5 space-y-3" onSubmit={(e) => void onSubmit(e)}>
+          <SignupKindTabs kind={kind} onChange={setKind} />
           <div>
             <Label htmlFor="name">Nome</Label>
             <Input
@@ -263,18 +263,48 @@ export function RegisterForm() {
               placeholder="Nome completo"
             />
           </div>
-          <div>
-            <Label htmlFor="reg-email">Email</Label>
-            <Input
-              id="reg-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              placeholder="nome@email.com"
-            />
-          </div>
+          {kind === "email" ? (
+            <div>
+              <Label htmlFor="reg-email">E-mail</Label>
+              <Input
+                id="reg-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                placeholder="nome@email.com"
+              />
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="reg-phone">Número de telefone</Label>
+              <div className="flex gap-2">
+                <Select
+                  id="reg-dial"
+                  value={dial}
+                  onChange={(e) => setDial(e.target.value)}
+                  className="w-[9.5rem] shrink-0"
+                  aria-label="Código do país"
+                >
+                  {COUNTRY_DIALS.map((c) => (
+                    <option key={c.code} value={c.dial}>
+                      {c.code} +{c.dial}
+                    </option>
+                  ))}
+                </Select>
+                <Input
+                  id="reg-phone"
+                  inputMode="tel"
+                  autoComplete="tel-national"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  placeholder="84 123 4567"
+                />
+              </div>
+            </div>
+          )}
           <div>
             <Label htmlFor="reg-password">Palavra-passe</Label>
             <Input
@@ -307,11 +337,9 @@ export function RegisterForm() {
             </p>
           ) : null}
           <Button className="btn-shine w-full" size="lg" disabled={busy}>
-            {busy ? "A criar conta…" : "Criar minha conta"}
+            {busy ? "A criar conta…" : "Criar conta"}
           </Button>
         </form>
-        <div className="my-5 h-px bg-border" />
-        <SocialButtons callbackURL="/dashboard" />
         <p className="mt-5 text-center text-sm text-muted">
           Já tem uma conta?{" "}
           <Link to="/login" className="font-medium text-primary hover:underline">

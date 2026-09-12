@@ -124,7 +124,7 @@ async function loadProfile(userId: string): Promise<Profile | null> {
 
 export const ensureProfile = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((d: { email?: string | null; name?: string | null } | undefined) => d ?? {})
+  .validator((d: { email?: string | null; name?: string | null; phone?: string | null } | undefined) => d ?? {})
   .handler(async ({ context, data }) => {
     const sql = await getSql();
     const inserted = await sql<{ user_id: string; email: string | null; full_name: string | null }>`
@@ -140,6 +140,9 @@ export const ensureProfile = createServerFn({ method: "POST" })
     if (isOwnerAdminEmail(data.email)) {
       await sql`update profiles set role = 'admin', email = ${data.email} where user_id = ${context.userId}`;
     }
+    if (data.phone) {
+      await sql`update profiles set phone = coalesce(phone, ${data.phone}) where user_id = ${context.userId}`;
+    }
     let welcomeEmailSent = false;
     try {
       const pending = await sql<{ email: string | null; full_name: string | null }>`
@@ -149,7 +152,7 @@ export const ensureProfile = createServerFn({ method: "POST" })
       `;
       const target = pending[0];
       const to = (data.email ?? target?.email ?? "").trim();
-      if (to) {
+      if (to && to.includes("@") && !to.endsWith("@phone.auxilar.app")) {
         const mail = await sendWelcomeEmail({ to, name: data.name ?? target?.full_name });
         if (mail.ok) {
           welcomeEmailSent = true;

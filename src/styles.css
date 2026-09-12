@@ -195,6 +195,20 @@
   0%, 100% { box-shadow: 0 0 0 0 rgb(37 211 102 / 0.35); }
   50% { box-shadow: 0 0 0 8px rgb(37 211 102 / 0); }
 }
+@keyframes video-nudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.video-cta {
+  animation: video-nudge 2.4s ease-in-out infinite;
+  box-shadow: 0 10px 28px -10px rgb(244 247 245 / 0.45);
+}
+.video-cta:hover {
+  filter: brightness(1.04);
+}
+.video-cta:active {
+  transform: scale(0.96);
+}
 
 @media (prefers-reduced-motion: reduce) {
   * {

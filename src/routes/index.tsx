@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { LoginForm } from "@/components/auth-screen";
+import { GateScreen } from "@/components/gate-screen";
 import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 
 export const Route = createFileRoute("/")({
@@ -12,5 +12,5 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: LoginForm,
+  component: GateScreen,
 });
