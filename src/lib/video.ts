@@ -4,7 +4,7 @@
  *
  * VIDEO_URL = "https://www.youtube.com/watch?v=EXEMPLO"
  */
-export const VIDEO_URL = "COLOCAR_LINK_AQUI";
+export const VIDEO_URL = "https://vaga-portugal-vsl.netlify.app/";
 
 export function isVideoConfigured() {
   const url = VIDEO_URL.trim();
