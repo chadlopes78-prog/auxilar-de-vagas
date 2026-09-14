@@ -55,6 +55,15 @@ function fail(data: AuthJson, status: number): never {
   throw err;
 }
 
+function alreadyExists(status: number, data: AuthJson): boolean {
+  const code = data.code || "";
+  return (
+    status === 422 ||
+    code.includes("USER_ALREADY_EXISTS") ||
+    /already exists/i.test(data.message || "")
+  );
+}
+
 export async function signInEmailAccount(input: {
   email: string;
   password: string;
@@ -72,20 +81,25 @@ export async function createEmailAccount(input: {
   password: string;
   name: string;
 }): Promise<{ created: boolean }> {
-  const signup = await postAuth("/api/auth/sign-up/email", input);
+  let signup = await postAuth("/api/auth/sign-up/email", input);
+
+  if (!signup.ok && (signup.status === 500 || signup.status === 502 || signup.status === 503)) {
+    await new Promise((r) => setTimeout(r, 600));
+    signup = await postAuth("/api/auth/sign-up/email", input);
+  }
+
   if (signup.ok && (signup.data.user || signup.data.token)) {
     rememberSessionToken(signup.data.token);
     return { created: true };
   }
 
-  const code = signup.data.code || "";
-  if (signup.status === 422 || code.includes("USER_ALREADY_EXISTS")) {
+  if (alreadyExists(signup.status, signup.data)) {
     try {
       await signInEmailAccount({ email: input.email, password: input.password });
       return { created: false };
     } catch {
       const err = new Error(
-        "Já existe uma conta com este email. Entre com a palavra-passe correcta.",
+        "Já existe uma conta com estes dados. Clique na opção Entrar.",
       ) as Error & { code?: string; status?: number };
       err.code = "USER_ALREADY_EXISTS";
       err.status = 422;

@@ -122,17 +122,38 @@ async function loadProfile(userId: string): Promise<Profile | null> {
   };
 }
 
+export const accountExists = createServerFn({ method: "POST" })
+  .validator((d: unknown) => z.object({ email: z.string().min(3) }).parse(d))
+  .handler(async ({ data }) => {
+    const sql = await getSql();
+    const email = data.email.trim().toLowerCase();
+    const rows = await sql<{ id: string }>`
+      select id from "user" where lower("email") = ${email} limit 1
+    `;
+    return { exists: rows.length > 0 };
+  });
+
 export const ensureProfile = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: { email?: string | null; name?: string | null; phone?: string | null } | undefined) => d ?? {})
   .handler(async ({ context, data }) => {
     const sql = await getSql();
-    const inserted = await sql<{ user_id: string; email: string | null; full_name: string | null }>`
-      insert into profiles (user_id, email, full_name, role, country_id, region_id, city_id, onboarded)
-      values (${context.userId}, ${data.email ?? null}, ${data.name ?? null}, 'candidate', 1, 1, 1, true)
-      on conflict (user_id) do nothing
-      returning user_id, email, full_name
-    `;
+    let inserted: { user_id: string; email: string | null; full_name: string | null }[] = [];
+    try {
+      inserted = await sql<{ user_id: string; email: string | null; full_name: string | null }>`
+        insert into profiles (user_id, email, full_name, role, country_id, region_id, city_id, onboarded)
+        values (${context.userId}, ${data.email ?? null}, ${data.name ?? null}, 'candidate', 1, 1, 1, true)
+        on conflict (user_id) do nothing
+        returning user_id, email, full_name
+      `;
+    } catch {
+      inserted = await sql<{ user_id: string; email: string | null; full_name: string | null }>`
+        insert into profiles (user_id, email, full_name, role, onboarded)
+        values (${context.userId}, ${data.email ?? null}, ${data.name ?? null}, 'candidate', true)
+        on conflict (user_id) do nothing
+        returning user_id, email, full_name
+      `;
+    }
     await sql`
       insert into candidate_profiles (user_id) values (${context.userId})
       on conflict (user_id) do nothing

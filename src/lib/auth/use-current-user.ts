@@ -67,7 +67,7 @@ export function useCurrentUserState(): CurrentUserState {
       setTimedOut(false);
       return;
     }
-    const t = window.setTimeout(() => setTimedOut(true), 4000);
+    const t = window.setTimeout(() => setTimedOut(true), 12000);
     return () => window.clearTimeout(t);
   }, [isPending]);
   const user = data?.user;

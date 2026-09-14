@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { createEmailAccount, signInEmailAccount } from "@/lib/auth/email-signup";
-import { ensureProfile } from "@/lib/server/account";
+import { accountExists, ensureProfile } from "@/lib/server/account";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { GuestOnly } from "@/components/require-auth";
@@ -9,8 +9,8 @@ import { APP_NAME } from "@/lib/brand";
 import { BrandMark } from "@/components/brand-mark";
 import { toast } from "sonner";
 import { SUPPORT_LOGIN_TEXT, supportUrl } from "@/components/support-whatsapp";
-import { authErrorMessage } from "@/lib/auth-errors";
-import { phoneToAuthEmail, toE164 } from "@/lib/phone-auth";
+import { authErrorMessage, isInvalidCredentials } from "@/lib/auth-errors";
+import { identifierToAuthEmail, phoneToAuthEmail, toE164 } from "@/lib/phone-auth";
 import { DialSelect } from "@/components/dial-select";
 
 export function AuthFrame({ children }: { children: ReactNode }) {
@@ -125,7 +125,7 @@ export function LoginForm() {
     e.preventDefault();
     setError("");
     const authEmail =
-      kind === "email" ? email.trim().toLowerCase() : phoneToAuthEmail(dial, phone);
+      kind === "email" ? identifierToAuthEmail(email) : phoneToAuthEmail(dial, phone);
     if (kind === "email" && !authEmail.includes("@")) {
       setError("Escreva um e-mail válido.");
       return;
@@ -137,9 +137,19 @@ export function LoginForm() {
     setBusy(true);
     try {
       await signInEmailAccount({ email: authEmail, password });
-      window.location.assign("/dashboard");
+      window.location.replace("/dashboard");
     } catch (err) {
-      const message = authErrorMessage(err, "Dados incorrectos. Verifique e tente novamente.");
+      let message = authErrorMessage(err, "Dados incorrectos. Verifique e tente novamente.");
+      if (isInvalidCredentials(err)) {
+        try {
+          const check = await accountExists({ data: { email: authEmail } });
+          if (!check.exists) {
+            message = "Não tens conta. Clique na opção Criar conta.";
+          }
+        } catch {
+          /* keep the credentials message if the lookup fails */
+        }
+      }
       setError(message);
       toast.error(message);
       setBusy(false);
@@ -158,7 +168,8 @@ export function LoginForm() {
             <Label htmlFor="email">E-mail</Label>
             <Input
               id="email"
-              type="email"
+              type="text"
+              inputMode="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -201,7 +212,7 @@ export function LoginForm() {
             {error}
           </p>
         ) : null}
-        <Button className="w-full" size="lg" disabled={busy}>
+        <Button className="w-full" size="lg" type="submit" disabled={busy}>
           {busy ? "A entrar…" : "Entrar"}
         </Button>
       </form>
@@ -267,7 +278,7 @@ export function RegisterForm() {
         data: { email: kind === "email" ? authEmail : null, name, phone: e164 },
       }).catch(() => null);
       toast.success(result.created ? "Conta criada com sucesso." : "Já tinha conta. Sessão iniciada.");
-      window.location.assign("/dashboard");
+      window.location.replace("/dashboard");
     } catch (err) {
       const message = authErrorMessage(err, "Não foi possível criar a conta.");
       setError(message);
@@ -299,7 +310,8 @@ export function RegisterForm() {
             <Label htmlFor="reg-email">E-mail</Label>
             <Input
               id="reg-email"
-              type="email"
+              type="text"
+              inputMode="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -356,7 +368,7 @@ export function RegisterForm() {
             {error}
           </p>
         ) : null}
-        <Button className="w-full" size="lg" disabled={busy}>
+        <Button className="w-full" size="lg" type="submit" disabled={busy}>
           {busy ? "A criar conta…" : "Criar conta"}
         </Button>
       </form>
