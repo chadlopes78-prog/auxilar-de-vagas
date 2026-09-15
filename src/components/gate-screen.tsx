@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { WatchVideoHero } from "@/components/watch-video";
 
 export function GateScreen() {
   const { user, isPending } = useCurrentUserState();
@@ -16,12 +15,8 @@ export function GateScreen() {
 
       <main className="gate-main mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 pb-16 pt-4 sm:px-8">
         <div className="gate-stage mx-auto w-full max-w-[34rem] text-center">
-          <p className="gate-kicker">PORTAL DE EMPREGO</p>
-          <h1 className="gate-title">
-            Assista ao vídeo agora para não falhar ao resgatar a vaga
-          </h1>
+          <h1 className="gate-kicker">PORTAL DE EMPREGO</h1>
           <div className="gate-actions">
-            <WatchVideoHero />
             <Link to={portalTo} className="gate-portal-cta">
               Acessar o portal
             </Link>
