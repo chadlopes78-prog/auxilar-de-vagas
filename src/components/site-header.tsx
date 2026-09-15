@@ -9,6 +9,7 @@ import { APP_NAME } from "@/lib/brand";
 import { BrandMark } from "@/components/brand-mark";
 import { supportUrl } from "@/components/support-whatsapp";
 import { MobileTabs } from "@/components/dash-nav";
+import { WatchVideoHeader, WatchVideoMenuItem } from "@/components/watch-video";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -41,6 +42,11 @@ export function SiteHeader() {
           <BrandMark className="size-7 shrink-0" decorative />
           <span className={`truncate font-bold text-base ${user ? "hidden md:inline" : ""}`}>{APP_NAME}</span>
         </Link>
+        {user ? (
+          <div className="shrink-0 md:hidden">
+            <WatchVideoHeader compact />
+          </div>
+        ) : null}
         <nav className="ml-auto hidden items-center gap-4 md:flex">
           {nav.map((n) => (
             <Link key={n.to} to={n.to} className="text-sm text-muted hover:text-fg">
@@ -49,6 +55,7 @@ export function SiteHeader() {
           ))}
           {user ? (
             <>
+              <WatchVideoHeader />
               <Link to="/notifications" aria-label="Notificações" className="text-muted hover:text-fg">
                 <Bell className="size-4" />
               </Link>
@@ -80,6 +87,7 @@ export function SiteHeader() {
           ))}
           {user ? (
             <>
+              <WatchVideoMenuItem onClick={() => setOpen(false)} />
               <Link to="/notifications" className="block min-h-11 py-3 text-base" onClick={() => setOpen(false)}>
                 Notificações
               </Link>
