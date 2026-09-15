@@ -377,6 +377,12 @@
 }
 
 .gate-prompt {
+  --gate-bg: #120e0b;
+  --gate-gold: #c9a45c;
+  --gate-red: #c62828;
+  --gate-red-fg: #ffffff;
+  --gate-ink: #171512;
+  --gate-title: #f7f3ec;
   position: fixed;
   inset: 0;
   z-index: 80;
@@ -430,29 +436,42 @@
 }
 .gate-prompt-primary {
   display: flex;
-  min-height: 3.25rem;
+  min-height: 3.5rem;
   width: 100%;
   align-items: center;
   justify-content: center;
   margin-top: 1.35rem;
   border-radius: 999px;
-  padding: 0 1.25rem;
-  background: var(--gate-red);
-  color: var(--gate-red-fg);
-  font-size: 0.9375rem;
+  padding: 0 1.5rem;
+  background: #c62828;
+  color: #ffffff;
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   box-shadow:
     0 0 0 1px rgb(255 255 255 / 0.08),
-    0 12px 28px -10px rgb(198 40 40 / 0.55);
-  transition: filter 240ms ease, transform 240ms ease, box-shadow 240ms ease;
+    0 14px 34px -10px rgb(198 40 40 / 0.62),
+    0 0 30px -8px rgb(198 40 40 / 0.42);
+  animation: gate-video-hop 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite,
+    gate-red-aura 2.8s ease-out infinite;
+  transition: filter 240ms ease, box-shadow 240ms ease;
 }
 .gate-prompt-primary:hover {
+  animation-play-state: paused;
   filter: brightness(1.08);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.12),
+    0 18px 38px -10px rgb(198 40 40 / 0.78),
+    0 0 38px -6px rgb(198 40 40 / 0.5);
 }
 .gate-prompt-primary:active {
-  transform: scale(0.97);
+  animation: none;
+  filter: none;
+  transform: scale(0.96);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.08),
+    0 8px 20px -10px rgb(198 40 40 / 0.5);
 }
 .gate-prompt-note {
   margin: 1.15rem 0 0;
@@ -552,7 +571,8 @@
   }
 }
 @media (max-width: 639px) {
-  .gate-video-cta {
+  .gate-video-cta,
+  .gate-prompt-primary {
     animation: gate-video-hop-sm 3.1s cubic-bezier(0.22, 1, 0.36, 1) infinite,
       gate-red-aura 3.1s ease-out infinite;
   }
@@ -583,7 +603,8 @@
 @media (prefers-reduced-motion: reduce) {
   .gate-screen::before,
   .gate-stage > *,
-  .gate-video-cta {
+  .gate-video-cta,
+  .gate-prompt-primary {
     animation: none !important;
   }
 }
