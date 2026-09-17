@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { auth } from "@/lib/auth/server";
-import { readDatabaseUrl } from "@/lib/database-url";
+import { listDatabaseUrlKeys, readDatabaseUrl } from "@/lib/database-url";
 
 function failResponse(status: number, originish: boolean) {
   const dbMissing = !readDatabaseUrl() && Boolean(process.env.VERCEL || process.env.NETLIFY);
@@ -10,6 +10,7 @@ function failResponse(status: number, originish: boolean) {
       message: originish
         ? "Não foi possível validar o endereço do site. Recarregue a página e tente novamente."
         : "Não foi possível concluir. Tente novamente.",
+      ...(dbMissing ? { dbKeys: listDatabaseUrlKeys() } : {}),
     },
     { status: originish ? 403 : status >= 400 ? status : 500 },
   );
