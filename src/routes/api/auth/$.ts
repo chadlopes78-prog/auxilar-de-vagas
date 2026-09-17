@@ -6,7 +6,7 @@ function failResponse(status: number, originish: boolean) {
   const dbMissing = !readDatabaseUrl() && Boolean(process.env.VERCEL || process.env.NETLIFY);
   return Response.json(
     {
-      code: originish ? "INVALID_ORIGIN" : dbMissing ? "FAILED_TO_CREATE_USER" : "FAILED_TO_CREATE_USER",
+      code: originish ? "INVALID_ORIGIN" : dbMissing ? "AUTH_NO_DB" : "FAILED_TO_CREATE_USER",
       message: originish
         ? "Não foi possível validar o endereço do site. Recarregue a página e tente novamente."
         : "Não foi possível concluir. Tente novamente.",
