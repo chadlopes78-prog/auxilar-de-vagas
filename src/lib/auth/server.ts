@@ -121,7 +121,7 @@ const baseURL = {
     "auxilar-de-vagas.netlify.app",
   ],
   protocol: "auto" as const,
-  fallback: explicitBaseURL ?? "http://localhost:8080",
+  fallback: explicitBaseURL ?? "https://auxilar-de-vagas.vercel.app",
 };
 
 function stripSlash(value: string | undefined): string | undefined {
@@ -238,10 +238,11 @@ const grokUserInfoUrl = `${issuerBase}/api/auth/oauth2/userinfo`;
 // the app turns sign-in on.
 const database = databaseUrl
   ? new Pool(pgPoolOptions(databaseUrl))
-  : process.env.NETLIFY
+  : process.env.VERCEL || process.env.NETLIFY
     ? new Pool(
         pgPoolOptions(
-          env("NETLIFY_DB_URL") ??
+          env("POSTGRES_URL") ??
+            env("NETLIFY_DB_URL") ??
             env("DATABASE_URL") ??
             "postgresql://127.0.0.1:5432/auxilar",
         ),
@@ -331,6 +332,7 @@ export const auth = betterAuth({
   // Secure + the names ourselves. (Browsers allow Secure cookies on
   // `http://localhost`, so local dev still works.)
   advanced: {
+    trustedProxyHeaders: true,
     useSecureCookies: false,
     defaultCookieAttributes: { secure: true, sameSite: "lax", path: "/" },
     cookies: {
