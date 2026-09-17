@@ -106,25 +106,71 @@ const LOCAL_DEV_ORIGINS: string[] = [
   "http://127.0.0.1:8080",
   "http://[::1]:8080",
 ];
-const baseURL = explicitBaseURL ?? {
-  // Include loopback hosts so dynamic baseURL resolves for local email/password
-  // (not only the preview wildcard).
+const baseURL = {
+  // Resolve the current host (Vercel, Netlify, preview, or local) instead of
+  // pinning to BETTER_AUTH_URL — that env is often the Netlify URL and was
+  // rejecting sign-in on auxilar-de-vagas.vercel.app with INVALID_ORIGIN.
   allowedHosts: [
     ...previewAllowedHosts,
     "localhost",
     "127.0.0.1",
     "[::1]",
     "*.netlify.app",
+    "*.vercel.app",
+    "auxilar-de-vagas.vercel.app",
+    "auxilar-de-vagas.netlify.app",
   ],
-  // `auto` → trust both http:// and https:// expansions of allowedHosts
-  // (preview is https; local dev is http).
   protocol: "auto" as const,
-  fallback: "http://localhost:8080",
+  fallback: explicitBaseURL ?? "http://localhost:8080",
 };
 
 function stripSlash(value: string | undefined): string | undefined {
   const v = value?.trim();
   return v ? v.replace(/\/+$/, "") : undefined;
+}
+
+function vercelOrigin(value: string | undefined): string | undefined {
+  const host = value?.trim().replace(/^https?:\/\//, "").replace(/\/+$/, "");
+  return host ? `https://${host}` : undefined;
+}
+
+function requestSelfOrigin(request?: Request): string | undefined {
+  if (!request) return undefined;
+  const host = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "")
+    .split(",")[0]
+    .trim();
+  if (!host) return undefined;
+  const proto = (
+    request.headers.get("x-forwarded-proto") ??
+    (host.startsWith("localhost") || host.startsWith("127.") || host.startsWith("[::1]")
+      ? "http"
+      : "https")
+  )
+    .split(",")[0]
+    .trim();
+  return `${proto}://${host}`;
+}
+
+function hostnameOf(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    return new URL(value.includes("://") ? value : `https://${value}`).hostname.toLowerCase();
+  } catch {
+    return undefined;
+  }
+}
+
+function isAllowedHost(host: string): boolean {
+  return (
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host === "[::1]" ||
+    host === "auxilar-de-vagas.vercel.app" ||
+    host === "auxilar-de-vagas.netlify.app" ||
+    host.endsWith(".vercel.app") ||
+    host.endsWith(".netlify.app") ||
+    host.endsWith(".grok-sandbox.com")
+  );
 }
 
 const DEPLOY_ORIGINS = [
@@ -133,7 +179,14 @@ const DEPLOY_ORIGINS = [
   stripSlash(env("DEPLOY_PRIME_URL")),
   stripSlash(env("DEPLOY_URL")),
   stripSlash(env("SITE_URL")),
+  vercelOrigin(env("VERCEL_URL")),
+  vercelOrigin(env("VERCEL_PROJECT_PRODUCTION_URL")),
+  vercelOrigin(env("VERCEL_BRANCH_URL")),
+  "https://auxilar-de-vagas.vercel.app",
+  "https://auxilar-de-vagas-chadlopes78-progs-projects.vercel.app",
+  "https://auxilar-de-vagas-git-main-chadlopes78-progs-projects.vercel.app",
   "https://auxilar-de-vagas.netlify.app",
+  "https://*.vercel.app",
   "https://*.netlify.app",
   "http://*.netlify.app",
 ].filter((v): v is string => Boolean(v));
@@ -145,27 +198,22 @@ const STATIC_TRUSTED_ORIGINS: string[] = [
   ...previewAllowedHosts.flatMap((host) => [`https://${host}`, `http://${host}`]),
 ];
 
-function isAllowedRequestOrigin(origin: string): boolean {
-  try {
-    const host = new URL(origin).hostname;
-    return (
-      host === "localhost" ||
-      host === "127.0.0.1" ||
-      host === "[::1]" ||
-      host === "auxilar-de-vagas.netlify.app" ||
-      host.endsWith(".netlify.app") ||
-      host.endsWith(".grok-sandbox.com")
-    );
-  } catch {
-    return false;
-  }
+function isAllowedRequestOrigin(origin: string, request?: Request): boolean {
+  const host = hostnameOf(origin);
+  if (!host) return false;
+  if (isAllowedHost(host)) return true;
+  const selfHost = hostnameOf(requestSelfOrigin(request));
+  return Boolean(selfHost && selfHost === host);
 }
 
 // Origins Better Auth accepts on credentialed POSTs (sign-up/sign-in, etc.).
 // Missing entries here surface as FORBIDDEN "Invalid origin".
 const trustedOrigins = (request?: Request) => {
-  const origin = request?.headers.get("origin") ?? request?.headers.get("Origin");
-  const extra = origin && isAllowedRequestOrigin(origin) ? [origin] : [];
+  const extra: string[] = [];
+  const origin = request?.headers.get("origin") ?? request?.headers.get("Origin") ?? undefined;
+  if (origin && isAllowedRequestOrigin(origin, request)) extra.push(origin);
+  const self = requestSelfOrigin(request);
+  if (self) extra.push(self);
   return [...new Set([...STATIC_TRUSTED_ORIGINS, ...extra])];
 };
 
