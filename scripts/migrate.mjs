@@ -102,5 +102,10 @@ main().catch((err) => {
   for (const key of ["code", "detail", "hint", "position", "where"]) {
     if (err?.[key] != null) console.error(`[migrate]   ${key}: ${err[key]}`);
   }
+  const quota = err?.code === "53000" || /exceeded the quota/i.test(String(err?.message || err));
+  if (quota) {
+    console.warn("[migrate] Neon quota exceeded — publishing without new migrations.");
+    process.exit(0);
+  }
   process.exit(1);
 });
