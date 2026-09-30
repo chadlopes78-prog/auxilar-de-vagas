@@ -30,7 +30,7 @@ function AppFrame() {
           <Outlet />
         </RequireAuth>
       )}
-      {pathname !== "/" ? <SupportFloatButton /> : null}
+      <SupportFloatButton />
       <Toaster position="bottom-left" />
     </AuthProvider>
   );
